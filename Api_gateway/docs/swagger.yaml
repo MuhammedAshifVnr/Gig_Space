@@ -1,0 +1,371 @@
+definitions:
+  helper.ADLogin:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  helper.AddCategory:
+    properties:
+      category_name:
+        type: string
+    type: object
+  helper.AddSkill:
+    properties:
+      skill_name:
+        type: string
+    type: object
+  helper.LoginData:
+    properties:
+      useremail:
+        type: string
+      userpassword:
+        type: string
+    type: object
+  helper.SignupData:
+    properties:
+      country:
+        type: string
+      firstname:
+        type: string
+      lastname:
+        type: string
+      phone:
+        type: string
+      role:
+        type: string
+      useremail:
+        type: string
+      userpassword:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: This is the API Gateway for the Flexi Worke project
+  title: API Gateway Swagger
+  version: "1.0"
+paths:
+  /admin/category:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all categories
+      produces:
+      - application/json
+      responses: {}
+      summary: Get all categories
+      tags:
+      - Admin
+    post:
+      consumes:
+      - application/json
+      description: Allows admin to add a new category
+      parameters:
+      - description: Category Name
+        in: body
+        name: category_name
+        required: true
+        schema:
+          $ref: '#/definitions/helper.AddCategory'
+      produces:
+      - application/json
+      responses: {}
+      summary: Add a new category
+      tags:
+      - Admin
+  /admin/category/{CatID}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a category by ID, used by admin
+      parameters:
+      - description: Category ID
+        in: path
+        name: CatID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Admin delete skill
+      tags:
+      - Admin
+  /admin/login:
+    post:
+      consumes:
+      - application/json
+      description: Log in as an admin using email and password.
+      parameters:
+      - description: Admin login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/helper.ADLogin'
+      produces:
+      - application/json
+      responses: {}
+      summary: Admin login
+      tags:
+      - Admin
+  /admin/skill:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint allows a admin to add a new skill by providing the
+        skill name.
+      parameters:
+      - description: Skill information
+        in: body
+        name: skill
+        required: true
+        schema:
+          $ref: '#/definitions/helper.AddSkill'
+      produces:
+      - application/json
+      responses: {}
+      summary: Add a new skill to a user's profile
+      tags:
+      - Admin
+  /admin/skills:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all skills
+      produces:
+      - application/json
+      responses: {}
+      summary: Get all skills
+      tags:
+      - Admin
+  /admin/skills/{skillID}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a skill by ID, used by admin
+      parameters:
+      - description: Skill ID
+        in: path
+        name: skillID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Admin delete skill
+      tags:
+      - Admin
+  /admin/users:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all users
+      produces:
+      - application/json
+      responses: {}
+      summary: Get all users
+      tags:
+      - Admin
+  /gig/add:
+    post:
+      consumes:
+      - multipart/form-data
+      description: This endpoint creates a new gig with a title, description, price,
+        and images. Images are uploaded via multipart form.
+      parameters:
+      - description: Title of the gig
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Description of the gig
+        in: formData
+        name: description
+        required: true
+        type: string
+      - description: Category of the gig
+        in: formData
+        name: category
+        required: true
+        type: string
+      - description: Number of delivery days
+        in: formData
+        name: delivery
+        required: true
+        type: string
+      - description: Number of revisions
+        in: formData
+        name: revisions
+        required: true
+        type: integer
+      - description: Price of the gig
+        in: formData
+        name: price
+        required: true
+        type: string
+      - collectionFormat: csv
+        description: Images for the gig (can upload multiple images)
+        in: formData
+        items:
+          type: file
+        name: images
+        required: true
+        type: array
+      produces:
+      - application/json
+      responses: {}
+      summary: Create a new gig
+      tags:
+      - Gigs
+  /gig/user:
+    get:
+      consumes:
+      - application/json
+      description: Get all gigs created by the logged-in user
+      produces:
+      - application/json
+      responses: {}
+      summary: Get Gigs by User ID
+      tags:
+      - Gigs
+  /ping:
+    get:
+      consumes:
+      - application/json
+      description: do ping
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: pong
+          schema:
+            type: string
+      summary: ping example
+      tags:
+      - example
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with email and password
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/helper.LoginData'
+      produces:
+      - application/json
+      responses: {}
+      summary: User login
+      tags:
+      - User
+  /user/profile:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the profile details of the user based on their user ID
+      produces:
+      - application/json
+      responses: {}
+      summary: Get user profile
+      tags:
+      - User
+    put:
+      consumes:
+      - multipart/form-data
+      description: Update the user's bio and title in their profile
+      parameters:
+      - description: User bio
+        in: formData
+        name: Bio
+        required: true
+        type: string
+      - description: User title
+        in: formData
+        name: Title
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Update user profile
+      tags:
+      - User
+  /user/profile-photo:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Uploads a profile photo for the user based on the userID.
+      parameters:
+      - description: Profile photo
+        in: formData
+        name: photo
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses: {}
+      summary: Uploads a profile photo for the user
+      tags:
+      - User
+  /user/signup:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account
+      parameters:
+      - description: Signup Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/helper.SignupData'
+      produces:
+      - application/json
+      responses: {}
+      summary: Sign up a new user
+      tags:
+      - User
+  /user/skill/{Skill}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a specific skill for a user based on the user ID and skill
+        ID
+      parameters:
+      - description: Skill ID to delete
+        in: path
+        name: Skill
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Delete a skill from a user
+      tags:
+      - User
+  /user/skills:
+    post:
+      description: This endpoint allows a freelancer to add a skill and set their
+        proficiency level.
+      parameters:
+      - description: Skill name
+        in: formData
+        name: skillName
+        required: true
+        type: string
+      - description: Proficiency level
+        in: formData
+        name: proficency
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Add freelancer skill
+      tags:
+      - User
+swagger: "2.0"
