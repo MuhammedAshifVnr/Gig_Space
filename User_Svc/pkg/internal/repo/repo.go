@@ -119,11 +119,11 @@ func (r *UserRepo) GetBio(userID uint) (model.UserProfile, error) {
 
 func (r *UserRepo) GetProfile(userID uint) (helper.UserWithProfile, error) {
 	var user helper.UserWithProfile
-	query := `SELECT u.id as user_id, u.first_name, u.last_name, u.email, u.country, u.phone, u.role,
-           up.bio, up.title
-    FROM users u
-    LEFT JOIN user_profiles up ON u.id = up.user_id
-    WHERE u.id = ?`
+	query := `SELECT u.id as user_id, u.first_name, u.last_name, u.email,u.country,u.phone, up.bio, up.title, pp.photo as profile_photo
+        FROM users u
+        LEFT JOIN user_profiles up ON u.id = up.user_id
+        LEFT JOIN profile_photos pp ON u.id = pp.user_id
+        WHERE u.id = ?`
 	err := r.DB.Raw(query, userID).Scan(&user).Error
 	return user, err
 }
@@ -194,8 +194,31 @@ func (r *UserRepo) GetAllUsers() ([]*proto.Profile, error) {
     last_name ,
     email ,
     country ,
-    phone 
+    phone ,
+	is_active
 FROM users`
 	err := r.DB.Raw(query).Scan(&users)
 	return users, err.Error
+}
+
+func (r *UserRepo) CreatPhoto(url string, id uint) error {
+	profile := model.ProfilePhoto{
+		UserID: id,
+		Photo:  url,
+	}
+	err := r.DB.Create(&profile)
+	return err.Error
+}
+
+func (r *UserRepo) GetPhoto(id uint) (model.ProfilePhoto, error) {
+	query := `select * from profile_photos where user_id =?`
+	var profile model.ProfilePhoto
+	err := r.DB.Raw(query, id).Scan(&profile)
+	return profile, err.Error
+}
+
+func (r *UserRepo) UpdatePhoto(url string, id uint) error {
+	query := `UPDATE user_profiles SET photo =? WHERE user_id = ?`
+	err := r.DB.Raw(query, url, id)
+	return err.Error
 }

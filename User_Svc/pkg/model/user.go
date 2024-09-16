@@ -11,6 +11,7 @@ type User struct {
 	Country   string
 	Phone     string
 	Role      string
+	IsActive  bool
 }
 
 type UserProfile struct {
@@ -29,9 +30,9 @@ type Freelancer_Skills struct {
 	Skills           Skills `gorm:"foreignKey:SkillID"`
 	ProficiencyLevel int
 }
-type ProfilePhoto struct{
+type ProfilePhoto struct {
 	gorm.Model
 	UserID uint
-	User User
-	Photo string
+	User   User
+	Photo  string
 }

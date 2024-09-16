@@ -26,7 +26,14 @@ type RepoInter interface {
 	GetCategory() ([]*proto.Category, error)
 	GetSkills() ([]*proto.Skill, error)
 	AdminDeleteSkill(id uint) error
-	AdminDeleteCategory(id uint)error
+	AdminDeleteCategory(id uint) error
 	GetCategoryID(name string) (uint, error)
 	GetAllUsers() ([]*proto.Profile, error)
+	CreatPhoto(url string, id uint) error
+	UpdatePhoto(url string, id uint) error
+	GetPhoto(id uint) (model.ProfilePhoto, error)
+	UnBlockUser(id uint)error
+	BlockUser(id uint)error
+	GetUserByID(id uint) (model.User, error)
+	
 }

@@ -55,3 +55,25 @@ func (r *UserRepo) AdminDeleteCategory(id uint) error {
 	}
 	return err.Error
 }
+
+func (r *UserRepo) GetUserByID(id uint) (model.User, error) {
+	var user model.User
+	err := r.DB.First(&user, "id=?", id)
+	if err.Error != nil {
+		return model.User{}, err.Error
+	}
+	fmt.Println("user=", user)
+	return user, nil
+}
+
+func (r *UserRepo) BlockUser(id uint) error {
+	query := `UPDATE users SET is_active =? WHERE id = ?`
+	err := r.DB.Exec(query, false, id)
+	return err.Error
+}
+
+func (r *UserRepo) UnBlockUser(id uint) error {
+	query := `UPDATE users SET is_active =? WHERE id = ?`
+	err := r.DB.Exec(query, true, id)
+	return err.Error
+}

@@ -8,9 +8,9 @@ import (
 )
 
 func InitializeService(cfg *config.Config) *service.UserService {
-	db ,rdb:= db.InitializeDB(cfg.DBUrl)
+	db ,rdb,s3:= db.InitializeDB(cfg.DBUrl)
 	repo := repo.NewUserRepository(db,rdb)
-	service := service.NewUserService(repo)
+	service := service.NewUserService(repo,s3)
 
 	return service
 }

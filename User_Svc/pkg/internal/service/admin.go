@@ -118,3 +118,26 @@ func (s *UserService)GetAllUsers(ctx context.Context,req *proto.EmtpyReq) (*prot
 		Users: users,
 	},nil
 }
+
+func (s *UserService)AdminUserBlock(ctx context.Context,req *proto.BlockReq)(*proto.CommonRes,error){
+	user,err:=s.reops.GetUserByID(uint(req.Id))
+	if err!=nil{
+		return &proto.CommonRes{},err
+	}
+	if !user.IsActive {
+		err:=s.reops.UnBlockUser(user.ID)
+		if err!=nil{
+			return &proto.CommonRes{},err
+		}
+	}else{
+		err:=s.reops.BlockUser(user.ID)
+		if err!=nil{
+			return &proto.CommonRes{},err
+		}
+	}
+	return &proto.CommonRes{
+		Message: "Updated Successfully",
+		Status: 200,
+	},nil
+
+}

@@ -12,18 +12,21 @@ import (
 	"github.com/MuhammedAshifVnr/Gig_Space/User_svc/utils/jwt"
 	"github.com/MuhammedAshifVnr/Gig_Space/User_svc/utils/otp"
 	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
 	reops repo.RepoInter
+	s3    *s3.S3
 	proto.UnimplementedUserServiceServer
 }
 
-func NewUserService(repo repo.RepoInter) *UserService {
+func NewUserService(repo repo.RepoInter, S3 *s3.S3) *UserService {
 	return &UserService{
 		reops: repo,
+		s3:    S3,
 	}
 }
 
@@ -83,6 +86,7 @@ func (s *UserService) UserSignup(ctx context.Context, req *proto.SignupReq) (*pr
 		Role:      req.Role,
 		Phone:     req.Phone,
 		Country:   req.Country,
+		IsActive: true,
 	}, Otp)
 	if err != nil {
 		return &proto.SignupRes{
@@ -135,7 +139,13 @@ func (s *UserService) Login(ctx context.Context, req *proto.LoginReq) (*proto.Lo
 			Error:   err.Error(),
 		}, nil
 	}
-	token, err := jwt.GenerateJwtToken(user.Email,user.ID,"user")
+	if !user.IsActive {
+		return &proto.LoginRes{
+			Status:  http.StatusUnauthorized,
+			Message: "User is Bolcked",
+		}, nil
+	}
+	token, err := jwt.GenerateJwtToken(user.Email, user.ID, "user")
 	if err != nil {
 		return &proto.LoginRes{
 			Message: "Error form jwt creation ",
@@ -150,6 +160,6 @@ func (s *UserService) Login(ctx context.Context, req *proto.LoginReq) (*proto.Lo
 	}, nil
 }
 
-func (s *UserService)ForgetPassword(ctx context.Context,)(){
+func (s *UserService) ForgetPassword(ctx context.Context) {
 
 }

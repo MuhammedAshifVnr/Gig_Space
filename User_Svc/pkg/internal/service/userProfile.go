@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/MuhammedAshifVnr/Gig_Space/User_svc/pkg/model"
+	"github.com/MuhammedAshifVnr/Gig_Space/User_svc/utils/upload"
 	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
 )
 
@@ -75,16 +76,44 @@ func (s *UserService) GetUserProfile(ctx context.Context, req *proto.ProfileReq)
 		Skill:       skills,
 		Title:       user.Title,
 		Description: user.Bio,
+		Photo :user.ProfilePhoto,
 	}, nil
 }
 
-func (s *UserService) DeleteSkill(ctx context.Context,req *proto.DeleteSkillRes) (*proto.CommonRes,error){
-	err:=s.reops.DeleteSkillByID(uint(req.UserId),uint(req.SkillId))
-	if err != nil{
-		return &proto.CommonRes{},err
+func (s *UserService) DeleteSkill(ctx context.Context, req *proto.DeleteSkillRes) (*proto.CommonRes, error) {
+	err := s.reops.DeleteSkillByID(uint(req.UserId), uint(req.SkillId))
+	if err != nil {
+		return &proto.CommonRes{}, err
 	}
 	return &proto.CommonRes{
 		Message: "Skill Deleted Successfully",
-		Status: 200,
-	},nil
+		Status:  200,
+	}, nil
 }
+
+func (s *UserService) UploadProfilePhoto(ctx context.Context, req *proto.UpProilePicReq) (*proto.CommonRes, error) {
+	url, err := upload.UploadPhoto(s.s3, req.Pic, uint(req.UserId))
+	if err != nil {
+		return &proto.CommonRes{}, err
+	}
+	profile, err := s.reops.GetPhoto(uint(req.UserId))
+	if err != nil {
+		return &proto.CommonRes{}, err
+	}
+	if profile.ID == 0 {
+		err := s.reops.CreatPhoto(url, uint(req.UserId))
+		if err != nil {
+			return &proto.CommonRes{}, err
+		}
+	} else {
+		err := s.reops.UpdatePhoto(url, uint(req.UserId))
+		if err != nil {
+			return &proto.CommonRes{}, err
+		}
+	}
+	return &proto.CommonRes{
+		Message: " Successfully Updated.",
+		Status:  200,
+	}, nil
+}
+

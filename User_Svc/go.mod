@@ -3,7 +3,8 @@ module github.com/MuhammedAshifVnr/Gig_Space/User_svc
 go 1.22.0
 
 require (
-	github.com/MuhammedAshifVnr/Gig_Space_Proto v1.0.30
+	github.com/MuhammedAshifVnr/Gig_Space_Proto v1.0.37
+	github.com/aws/aws-sdk-go v1.55.5
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/redis/go-redis/v9 v9.6.1
 	github.com/spf13/viper v1.19.0
@@ -24,6 +25,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
