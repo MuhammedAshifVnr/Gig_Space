@@ -74,7 +74,7 @@ func (h *UserHandler) AddCategory(c *fiber.Ctx) error {
 	return c.Status(int(res.Status)).JSON(res)
 }
 
-// AddSkill 
+// AddSkill
 // @Summary Add a new skill to a user's profile
 // @Description This endpoint allows a admin to add a new skill by providing the skill name.
 // @Tags Admin
@@ -82,17 +82,17 @@ func (h *UserHandler) AddCategory(c *fiber.Ctx) error {
 // @Produce  json
 // @Param   skill  body  helper.AddSkill  true  "Skill information"
 // @Router /admin/skill [post]
-func (h *UserHandler)AddSkill(c *fiber.Ctx)error{
+func (h *UserHandler) AddSkill(c *fiber.Ctx) error {
 	var req helper.AddSkill
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "cannot parse JSON",
 		})
 	}
-	res, err:=h.userClient.AddSkill(context.Background(),&proto.AddSkillReq{
+	res, err := h.userClient.AddSkill(context.Background(), &proto.AddSkillReq{
 		SkillName: req.Name,
 	})
-	if err!=nil{
+	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -100,23 +100,22 @@ func (h *UserHandler)AddSkill(c *fiber.Ctx)error{
 	return c.Status(int(res.Status)).JSON(res)
 }
 
-
 // @Summary Get all categories
 // @Description Retrieves a list of all categories
 // @Tags Admin
 // @Accept json
 // @Produce json
 // @Router /admin/category [get]
-func (h *UserHandler)GetCategory(c *fiber.Ctx)error{
-	res,err:=h.userClient.GetCategory(context.Background(),&proto.EmtpyReq{})
-	if err !=nil{
+func (h *UserHandler) GetCategory(c *fiber.Ctx) error {
+	res, err := h.userClient.GetCategory(context.Background(), &proto.EmtpyReq{})
+	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
-			"error":err.Error(),
+			"error": err.Error(),
 		})
 	}
 	return c.Status(200).JSON(fiber.Map{
-		"data":res,
-		"status":200,
+		"data":   res,
+		"status": 200,
 	})
 }
 
@@ -126,16 +125,16 @@ func (h *UserHandler)GetCategory(c *fiber.Ctx)error{
 // @Accept json
 // @Produce json
 // @Router /admin/skills [get]
-func (h *UserHandler)GetSkills(c *fiber.Ctx)error{
-	res ,err :=h.userClient.GetSkill(context.Background(),&proto.EmtpyReq{})
-	if err !=nil{
+func (h *UserHandler) GetSkills(c *fiber.Ctx) error {
+	res, err := h.userClient.GetSkill(context.Background(), &proto.EmtpyReq{})
+	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
-			"error":err.Error(),
+			"error": err.Error(),
 		})
 	}
 	return c.Status(200).JSON(fiber.Map{
-		"data":res,
-		"status":200,
+		"data":   res,
+		"status": 200,
 	})
 }
 
@@ -146,18 +145,18 @@ func (h *UserHandler)GetSkills(c *fiber.Ctx)error{
 // @Accept json
 // @Produce json
 // @Router /admin/skills/{skillID} [delete]
-func (h *UserHandler)AdDeleteSkill(c *fiber.Ctx)error{
-	id:=c.Params("skillID")
-	skillID,_:=strconv.Atoi(id)
-	_,err:=h.userClient.AdDeleteSkill(context.Background(),&proto.ADeleteSkillReq{Id: uint32(skillID)})
-	if err != nil{
+func (h *UserHandler) AdDeleteSkill(c *fiber.Ctx) error {
+	id := c.Params("skillID")
+	skillID, _ := strconv.Atoi(id)
+	_, err := h.userClient.AdDeleteSkill(context.Background(), &proto.ADeleteSkillReq{Id: uint32(skillID)})
+	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
-			"error":err.Error(),
+			"error": err.Error(),
 		})
 	}
 	return c.Status(200).JSON(fiber.Map{
-		 "message": "Skill successfully deleted",
-		 "status":200,
+		"message": "Skill successfully deleted",
+		"status":  200,
 	})
 
 }
@@ -169,18 +168,18 @@ func (h *UserHandler)AdDeleteSkill(c *fiber.Ctx)error{
 // @Accept json
 // @Produce json
 // @Router /admin/category/{CatID} [delete]
-func (h *UserHandler)AdDeleteCategory(c *fiber.Ctx)error{
-	id:=c.Params("CatID")
-	skillID,_:=strconv.Atoi(id)
-	_,err:=h.userClient.DeleteCategory(context.Background(),&proto.DeleteCatReq{Id: uint32(skillID)})
-	if err != nil{
+func (h *UserHandler) AdDeleteCategory(c *fiber.Ctx) error {
+	id := c.Params("CatID")
+	skillID, _ := strconv.Atoi(id)
+	_, err := h.userClient.DeleteCategory(context.Background(), &proto.DeleteCatReq{Id: uint32(skillID)})
+	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
-			"error":err.Error(),
+			"error": err.Error(),
 		})
 	}
 	return c.Status(200).JSON(fiber.Map{
-		 "message": "Category successfully deleted",
-		 "status":200,
+		"message": "Category successfully deleted",
+		"status":  200,
 	})
 
 }
@@ -191,16 +190,35 @@ func (h *UserHandler)AdDeleteCategory(c *fiber.Ctx)error{
 // @Accept json
 // @Produce json
 // @Router /admin/users [get]
-func (h *UserHandler)GetAllUsers(c *fiber.Ctx)error{
-	res, err:=h.userClient.GetAllUsers(context.Background(),&proto.EmtpyReq{})
-	if err !=nil{
+func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
+	res, err := h.userClient.GetAllUsers(context.Background(), &proto.EmtpyReq{})
+	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
-			"error":err.Error(),
+			"error": err.Error(),
 		})
 	}
 	return c.Status(200).JSON(fiber.Map{
-		"data":res,
-		"status":200,
+		"data":   res,
+		"status": 200,
 	})
 
+}
+
+// @Summary Block a user by userID
+// @Description This endpoint blocks a user by their user ID. The userID is retrieved from the URL path and must be a valid integer.
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Param userID path int true "User ID"
+// @Router /admin/block/{userID} [post]
+func (h *UserHandler) UserBlock(c *fiber.Ctx) error {
+	userID := c.Params("userID")
+	ID, _ := strconv.Atoi(userID)
+	res, err := h.userClient.AdminUserBlock(context.Background(), &proto.BlockReq{Id: uint32(ID)})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(int(res.Status)).JSON(res)
 }

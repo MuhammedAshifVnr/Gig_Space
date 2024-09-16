@@ -15,6 +15,31 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/block/{userID}": {
+            "post": {
+                "description": "This endpoint blocks a user by their user ID. The userID is retrieved from the URL path and must be a valid integer.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Block a user by userID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/admin/category": {
             "get": {
                 "description": "Retrieves a list of all categories",

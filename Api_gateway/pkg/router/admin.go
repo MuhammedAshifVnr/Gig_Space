@@ -17,4 +17,5 @@ func AdminRouters(r fiber.Router, handller *handler.UserHandler){
 	r.Delete("/skills/:skillID",middleware.Auth(role),handller.AdDeleteSkill)
 	r.Delete("/category/:CatID",middleware.Auth(role),handller.AdDeleteCategory)
 	r.Get("/users",middleware.Auth(role),handller.GetAllUsers)
+	r.Post("/block/:userID",middleware.Auth(role),handller.UserBlock)
 }

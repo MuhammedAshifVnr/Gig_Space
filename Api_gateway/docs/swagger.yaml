@@ -46,6 +46,24 @@ info:
   title: API Gateway Swagger
   version: "1.0"
 paths:
+  /admin/block/{userID}:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint blocks a user by their user ID. The userID is retrieved
+        from the URL path and must be a valid integer.
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Block a user by userID
+      tags:
+      - Admin
   /admin/category:
     get:
       consumes:
