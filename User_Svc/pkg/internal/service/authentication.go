@@ -62,13 +62,13 @@ func (s *UserService) UserSignup(ctx context.Context, req *proto.SignupReq) (*pr
 		}, nil
 	}
 
-	// err := s.reops.CheckingExist(req.Email, req.Phone)
-	// if err != nil {
-	// 	return &proto.SignupRes{
-	// 		Message: err.Error(),
-	// 		Status:  http.StatusBadRequest,
-	// 	}, nil
-	// }
+	err := s.reops.CheckingExist(req.Email, req.Phone)
+	if err != nil {
+		return &proto.SignupRes{
+			Message: err.Error(),
+			Status:  http.StatusBadRequest,
+		}, nil
+	}
 
 	Otp, err := otp.SendOtp(req.Email, string(req.Firstname+" "+req.Lastname))
 	if err != nil {
@@ -86,7 +86,7 @@ func (s *UserService) UserSignup(ctx context.Context, req *proto.SignupReq) (*pr
 		Role:      req.Role,
 		Phone:     req.Phone,
 		Country:   req.Country,
-		IsActive: true,
+		IsActive:  true,
 	}, Otp)
 	if err != nil {
 		return &proto.SignupRes{
@@ -115,6 +115,7 @@ func (s *UserService) VerifyingEmail(ctx context.Context, req *proto.VerifyReq) 
 	if err != nil {
 		return &proto.VerifyRes{}, err
 	}
+	s.reops.DeleteOtp(req.Otp)
 	return &proto.VerifyRes{
 		Message: "User Verifed Successfully.Go to the Login.",
 		Status:  200,
@@ -160,6 +161,43 @@ func (s *UserService) Login(ctx context.Context, req *proto.LoginReq) (*proto.Lo
 	}, nil
 }
 
-func (s *UserService) ForgetPassword(ctx context.Context) {
+func (s *UserService) ForgotPassword(ctx context.Context, req *proto.FP_Req) (*proto.CommonRes, error) {
+	user, err := s.reops.GetUser(req.Email)
+	if err != nil {
+		return &proto.CommonRes{}, fmt.Errorf("user not fount")
+	}
+	otp, err := otp.ForgotOtp(user.Email, user.FirstName)
+	if err != nil {
+		fmt.Println("111111")
+		return &proto.CommonRes{}, err
+	}
+	err = s.reops.SignupData(model.User{Email: user.Email}, otp)
+	if err != nil {
+		fmt.Println("00000000")
+		return &proto.CommonRes{}, err
+	}
+	return &proto.CommonRes{
+		Message: "Reset OTP Successfully Sended",
+		Status:  200,
+	}, nil
+}
 
+func (s *UserService)ResetPassword(ctx context.Context,req *proto.ResetPwdReq)(*proto.CommonRes,error){
+	val,err:=s.reops.VerifyingEmail(req.Otp,"")
+	if err == redis.Nil {
+		return &proto.CommonRes{}, errors.New("this OTP was expired")
+	}
+	var user model.User
+	err = json.Unmarshal([]byte(val), &user)
+	if err != nil {
+		return &proto.CommonRes{}, errors.New("Could not unmarshal user: " + err.Error())
+	}
+	err=s.reops.ResetPassword(user.Email,req.Password)
+	if err!=nil{
+		return &proto.CommonRes{},err
+	}
+	return &proto.CommonRes{
+		Message: "Password Updated",
+		Status: 200,
+	},nil
 }

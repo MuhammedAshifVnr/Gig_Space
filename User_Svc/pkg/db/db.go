@@ -42,5 +42,6 @@ func autoMigrate(db *gorm.DB) {
 		&model.Freelancer_Skills{},
 		&model.UserProfile{},
 		&model.ProfilePhoto{},
+		&model.Address{},
 	)
 }

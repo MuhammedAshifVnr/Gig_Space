@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/pkg/internal/model"
-	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
 
 	"gorm.io/gorm"
 )
@@ -27,13 +26,48 @@ func (r *GigRepo) CreateGgi(gig model.Gig) error {
 	return nil
 }
 
-func (r *GigRepo) GetAllGigByID(id uint) ([]*proto.Gig, error) {
-	var gigs []*proto.Gig
-	query := "SELECT id, title, description, frelancer_id, price, category, delivery_days, revisions FROM gigs WHERE frelancer_id = $1"
-	err := r.DB.Raw(query, id).Scan(&gigs).Error
+func (r *GigRepo) GetGigsByFreelancerID(freelancerID uint) ([]model.Gig, error) {
+	var gigs []model.Gig
+	query := r.DB.Where("freelancer_id = ?", freelancerID).Preload("Images")
+
+	err := query.Find(&gigs).Error
 	if err != nil {
-		return gigs, err
+		return nil, err
 	}
-	fmt.Println("gig", gigs,"err",err)
 	return gigs, nil
+}
+
+func (r *GigRepo) GetGigByID(Id uint) (model.Gig, error) {
+	var gig model.Gig
+	// query := `select * from gigs where id =?`
+	// err := r.DB.Raw(query, Id).Scan(&gig)
+	err := r.DB.Preload("Images").First(&gig, Id).Error
+	return gig, err
+}
+
+func (r *GigRepo) UpdateGig(gig model.Gig) error {
+	err := r.DB.Save(&gig).Error
+	return err
+}
+
+func (r *GigRepo) DeleteImages(id uint) error {
+	fmt.Println("id = ", id)
+	query := `DELETE FROM images WHERE gig_id = ?`
+	err := r.DB.Exec(query, id).Error
+	return err
+}
+
+func (r *GigRepo)DeleteGig(id,user_id uint)error{
+	return r.DB.Transaction(func(tx *gorm.DB) error {
+
+		if err := tx.Exec(`DELETE FROM images WHERE gig_id = ?`, id).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Exec(`DELETE FROM gigs WHERE id = ? AND freelancer_id = ?`, id,user_id).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
 }

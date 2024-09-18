@@ -296,6 +296,95 @@
                 "responses": {}
             }
         },
+        "/gig/{GigID}": {
+            "delete": {
+                "description": "Deletes a gig by its ID, ensuring the user is authorized to delete the gig.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Gigs"
+                ],
+                "summary": "Delete an existing gig",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Gig ID",
+                        "name": "GigID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/gig/{id}": {
+            "put": {
+                "description": "Updates the details of an existing gig by ID, including title, description, category, delivery days, revisions, price, and images.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Gigs"
+                ],
+                "summary": "Update an existing gig",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Gig ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Title of the gig",
+                        "name": "title",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Description of the gig",
+                        "name": "description",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category of the gig",
+                        "name": "category",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Delivery days",
+                        "name": "delivery",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of revisions",
+                        "name": "revisions",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Price of the gig",
+                        "name": "price",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Images for the gig (multiple files allowed)",
+                        "name": "images",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/ping": {
             "get": {
                 "description": "do ping",
@@ -317,6 +406,61 @@
                         }
                     }
                 }
+            }
+        },
+        "/user/address": {
+            "post": {
+                "description": "Update the user's address (city, district, state)",
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update user address",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "City",
+                        "name": "city",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "District",
+                        "name": "district",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "State",
+                        "name": "state",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/user/forgot-password": {
+            "post": {
+                "description": "Sends a forgot password request to the user's email address. The user will receive an OTP to reset the password.",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Forgot Password",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User Email",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
             }
         },
         "/user/login": {
@@ -417,6 +561,45 @@
                 "responses": {}
             }
         },
+        "/user/reset-password": {
+            "post": {
+                "description": "Allows the user to reset their password using the OTP and new password values.",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Reset Password",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "OTP sent to user email",
+                        "name": "otp",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "New password",
+                        "name": "pwd1",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Confirm new password",
+                        "name": "pwd2",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/user/signup": {
             "post": {
                 "description": "Create a new user account",
@@ -439,6 +622,17 @@
                         "schema": {
                             "$ref": "#/definitions/helper.SignupData"
                         }
+                    },
+                    {
+                        "enum": [
+                            "freelancer",
+                            "client"
+                        ],
+                        "type": "string",
+                        "description": "User role",
+                        "name": "role",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {}
@@ -551,9 +745,6 @@
                     "type": "string"
                 },
                 "phone": {
-                    "type": "string"
-                },
-                "role": {
                     "type": "string"
                 },
                 "useremail": {

@@ -28,9 +28,19 @@ func NewGigService(repo repo.RepoInter, s3Svc *s3.S3, UserClient proto.UserServi
 }
 
 func (s *GigService) CreateGig(ctx context.Context, req *proto.CreateGigReq) (*proto.EmptyResponse, error) {
-
-	imageUrls := []string{}
-
+	CatRes, err := s.userClient.GetCategoryByName(context.Background(), &proto.CategoryName{Name: req.Category})
+	if err != nil {
+		return &proto.EmptyResponse{}, err
+	}
+	gig := model.Gig{
+		Title:        req.Title,
+		Description:  req.Description,
+		FreelancerID: uint(req.UserId),
+		Category:     uint(CatRes.Id),
+		Price:        req.Price,
+		DeliveryDays: int(req.DeliveryDays),
+		Revisions:    int(req.NumberOfRevisions),
+	}
 	for _, imageBytes := range req.GetImages() {
 		file, fileHeader, err := convert.ConvertToMultipartFile(imageBytes)
 		if err != nil {
@@ -44,21 +54,7 @@ func (s *GigService) CreateGig(ctx context.Context, req *proto.CreateGigReq) (*p
 			return nil, err
 		}
 
-		imageUrls = append(imageUrls, imageUrl)
-	}
-	res, err := s.userClient.GetCategoryByName(context.Background(), &proto.CategoryName{Name: req.Category})
-	if err != nil {
-		return &proto.EmptyResponse{}, err
-	}
-	gig := model.Gig{
-		Title:        req.Title,
-		Description:  req.Description,
-		Price:        req.Price,
-		Category:     uint(res.Id),
-		FrelancerID:  uint(req.UserId),
-		Image_Urls:   imageUrls,
-		DeliveryDays: int(req.DeliveryDays),
-		Revisions:    int(req.NumberOfRevisions),
+		gig.Images = append(gig.Images, model.Image{Url: imageUrl})
 	}
 	err = s.repos.CreateGgi(gig)
 	if err != nil {
@@ -67,12 +63,99 @@ func (s *GigService) CreateGig(ctx context.Context, req *proto.CreateGigReq) (*p
 	return &proto.EmptyResponse{}, nil
 }
 
-func (s *GigService)GetAllGigByID(ctx context.Context,req *proto.GetAllGigsByIDReq)(*proto.GetAllGigsResp,error){
-	gigs,err:=s.repos.GetAllGigByID(uint(req.Id))
-	if err!=nil{
-		return &proto.GetAllGigsResp{},err
+func (s *GigService) GetGigsByFreelancerID(ctx context.Context, req *proto.GetGigsByFreelancerIDRequest) (*proto.GetGigsByFreelancerIDResponse, error) {
+	gigs, err := s.repos.GetGigsByFreelancerID(uint(req.FreelancerId))
+	if err != nil {
+		return &proto.GetGigsByFreelancerIDResponse{}, err
 	}
-	return &proto.GetAllGigsResp{
-		Gig: gigs,
-	},nil
+	var grpcGigs []*proto.Gig
+	for _, gig := range gigs {
+		var grpcImages []*proto.Image
+		for _, img := range gig.Images {
+			grpcImages = append(grpcImages, &proto.Image{
+				Url: img.Url,
+			})
+		}
+		grpcGigs = append(grpcGigs, &proto.Gig{
+			Id:           uint64(gig.ID),
+			Title:        gig.Title,
+			Description:  gig.Description,
+			Category:     uint32(gig.Category),
+			FreelancerId: uint64(gig.FreelancerID),
+			Price:        float32(gig.Price),
+			DeliveryDays: int32(gig.DeliveryDays),
+			Revisions:    int32(gig.Revisions),
+			Image:        grpcImages,
+		})
+	}
+
+	return &proto.GetGigsByFreelancerIDResponse{Gigs: grpcGigs}, nil
+}
+
+func (s *GigService) UpdateGigByID(ctx context.Context, req *proto.UpdateGigRequest) (*proto.CommonGigRes, error) {
+	gig, err := s.repos.GetGigByID(uint(req.Id))
+	if err != nil {
+		return nil, err
+	}
+	if req.Category != "" {
+		CatRes, err := s.userClient.GetCategoryByName(context.Background(), &proto.CategoryName{Name: req.Category})
+		if err != nil {
+			return nil, err
+		}
+		gig.Category = uint(CatRes.Id)
+	}
+
+	if req.Title != "" {
+		gig.Title = req.Title
+	}
+	if req.Description != "" {
+		gig.Description = req.Description
+	}
+	if req.Price != 0 {
+		gig.Price = req.Price
+	}
+	if req.DeliveryDays != 0 {
+		gig.DeliveryDays = int(req.DeliveryDays)
+	}
+	if req.NumberOfRevisions != 0 {
+		gig.Revisions = int(req.NumberOfRevisions)
+	}
+	if len(req.Images) > 0 {
+		if err = s.repos.DeleteImages(gig.ID); err != nil {
+			return nil, err
+		}
+		gig.Images = []model.Image{}
+		for _, imageBytes := range req.GetImages() {
+			file, fileHeader, err := convert.ConvertToMultipartFile(imageBytes)
+			if err != nil {
+				return nil, err
+			}
+			imageUrl, err := upimage.UploadImage(s.s3, file, fileHeader)
+			if err != nil {
+				return nil, err
+			}
+			gig.Images = append(gig.Images, model.Image{Url: imageUrl})
+		}
+	}
+	err = s.repos.UpdateGig(gig)
+	if err != nil {
+		return nil, err
+	}
+
+	return &proto.CommonGigRes{
+		Message: "Updated Successfully",
+		Status:  200,
+	}, nil
+
+}
+
+func (s *GigService) DeleteGigByID(ctx context.Context, req *proto.DeleteReq) (*proto.CommonGigRes, error) {
+	err := s.repos.DeleteGig(uint(req.GigId), uint(req.UserId))
+	if err != nil {
+		return nil, err
+	}
+	return &proto.CommonGigRes{
+		Message: "Successfully Deleted",
+		Status:  200,
+	}, nil
 }

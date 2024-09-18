@@ -2,10 +2,14 @@ package repo
 
 import (
 	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/pkg/internal/model"
-	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
 )
 
 type RepoInter interface {
 	CreateGgi(gig model.Gig) error
-	GetAllGigByID(id uint) ([]*proto.Gig, error)
+	//AddImages(images []string, id uint) error
+	GetGigsByFreelancerID(freelancerID uint) ([]model.Gig, error)
+	GetGigByID(Id uint) (model.Gig, error)
+	UpdateGig(gig model.Gig)error
+	DeleteImages(id uint)error
+	DeleteGig(id,user_id uint)error
 }

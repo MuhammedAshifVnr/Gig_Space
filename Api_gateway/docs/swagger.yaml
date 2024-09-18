@@ -33,8 +33,6 @@ definitions:
         type: string
       phone:
         type: string
-      role:
-        type: string
       useremail:
         type: string
       userpassword:
@@ -185,6 +183,68 @@ paths:
       summary: Get all users
       tags:
       - Admin
+  /gig/{GigID}:
+    delete:
+      description: Deletes a gig by its ID, ensuring the user is authorized to delete
+        the gig.
+      parameters:
+      - description: Gig ID
+        in: path
+        name: GigID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Delete an existing gig
+      tags:
+      - Gigs
+  /gig/{id}:
+    put:
+      consumes:
+      - multipart/form-data
+      description: Updates the details of an existing gig by ID, including title,
+        description, category, delivery days, revisions, price, and images.
+      parameters:
+      - description: Gig ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Title of the gig
+        in: formData
+        name: title
+        type: string
+      - description: Description of the gig
+        in: formData
+        name: description
+        type: string
+      - description: Category of the gig
+        in: formData
+        name: category
+        type: string
+      - description: Delivery days
+        in: formData
+        name: delivery
+        type: integer
+      - description: Number of revisions
+        in: formData
+        name: revisions
+        type: integer
+      - description: Price of the gig
+        in: formData
+        name: price
+        type: integer
+      - description: Images for the gig (multiple files allowed)
+        in: formData
+        name: images
+        type: file
+      produces:
+      - application/json
+      responses: {}
+      summary: Update an existing gig
+      tags:
+      - Gigs
   /gig/add:
     post:
       consumes:
@@ -262,6 +322,44 @@ paths:
       summary: ping example
       tags:
       - example
+  /user/address:
+    post:
+      description: Update the user's address (city, district, state)
+      parameters:
+      - description: City
+        in: formData
+        name: city
+        type: string
+      - description: District
+        in: formData
+        name: district
+        type: string
+      - description: State
+        in: formData
+        name: state
+        type: string
+      responses: {}
+      summary: Update user address
+      tags:
+      - User
+  /user/forgot-password:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Sends a forgot password request to the user's email address. The
+        user will receive an OTP to reset the password.
+      parameters:
+      - description: User Email
+        in: formData
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Forgot Password
+      tags:
+      - User
   /user/login:
     post:
       consumes:
@@ -329,6 +427,34 @@ paths:
       summary: Uploads a profile photo for the user
       tags:
       - User
+  /user/reset-password:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Allows the user to reset their password using the OTP and new password
+        values.
+      parameters:
+      - description: OTP sent to user email
+        in: formData
+        name: otp
+        required: true
+        type: string
+      - description: New password
+        in: formData
+        name: pwd1
+        required: true
+        type: string
+      - description: Confirm new password
+        in: formData
+        name: pwd2
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Reset Password
+      tags:
+      - User
   /user/signup:
     post:
       consumes:
@@ -341,6 +467,14 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/helper.SignupData'
+      - description: User role
+        enum:
+        - freelancer
+        - client
+        in: query
+        name: role
+        required: true
+        type: string
       produces:
       - application/json
       responses: {}

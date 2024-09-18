@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/MuhammedAshifVnr/Gig_Space/User_svc/pkg/model"
 	"github.com/MuhammedAshifVnr/Gig_Space/User_svc/utils/upload"
@@ -67,6 +68,8 @@ func (s *UserService) GetUserProfile(ctx context.Context, req *proto.ProfileReq)
 	if err != nil {
 		return &proto.ProfileRes{}, err
 	}
+	add := s.reops.GetAddress(uint(req.UserId))
+	fmt.Println("add ", add)
 	return &proto.ProfileRes{
 		Firstname:   user.FirstName,
 		Lastname:    user.LastName,
@@ -76,7 +79,12 @@ func (s *UserService) GetUserProfile(ctx context.Context, req *proto.ProfileReq)
 		Skill:       skills,
 		Title:       user.Title,
 		Description: user.Bio,
-		Photo :user.ProfilePhoto,
+		Photo:       user.ProfilePhoto,
+		Address: &proto.Address{
+			City:     add.City,
+			State:    add.State,
+			District: add.District,
+		},
 	}, nil
 }
 
@@ -113,6 +121,34 @@ func (s *UserService) UploadProfilePhoto(ctx context.Context, req *proto.UpProil
 	}
 	return &proto.CommonRes{
 		Message: " Successfully Updated.",
+		Status:  200,
+	}, nil
+}
+
+func (s *UserService) UpdateAddress(ctx context.Context, req *proto.AddressReq) (*proto.CommonRes, error) {
+	add := s.reops.GetAddress(uint(req.Id))
+	if add.ID == 0 {
+		err := s.reops.CreateAddress(req.State, req.District, req.City, int(req.Id))
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		if req.City != "" {
+			add.City = req.City
+		}
+		if req.District != "" {
+			add.District = req.District
+		}
+		if req.State != "" {
+			add.State = req.State
+		}
+		err := s.reops.UpdateAddress(add)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &proto.CommonRes{
+		Message: "updated successfully",
 		Status:  200,
 	}, nil
 }

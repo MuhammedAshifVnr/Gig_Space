@@ -35,5 +35,9 @@ type RepoInter interface {
 	UnBlockUser(id uint)error
 	BlockUser(id uint)error
 	GetUserByID(id uint) (model.User, error)
-	
+	ResetPassword(email, password string) error
+	DeleteOtp(otp string)
+	UpdateAddress(add model.Address) error
+	CreateAddress(State, District, City string, id int) error
+	GetAddress(id uint) model.Address
 }

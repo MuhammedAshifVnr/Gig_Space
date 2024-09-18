@@ -47,3 +47,29 @@ func SendOtp(UserEmail, UserName string) (string, error) {
 	auth := smtp.PlainAuth("", from, password, smtpHost)
 	return otp, smtp.SendMail(smtpHost+":"+smtpPort, auth, from, []string{UserEmail}, []byte(msg))
 }
+
+func ForgotOtp(UserEmail, UserName string) (string, error) {
+    from := viper.GetString("Email")
+    password := viper.GetString("AppPassword")
+
+    otp := generateOtp()
+
+    subject := "Password Reset OTP"
+    body := fmt.Sprintf(
+        "Hello %s,\n\n"+
+            "We received a request to reset your password. Use the OTP below to proceed:\n\n"+
+            "OTP: %s\n\n"+
+            "If you did not request a password reset, please ignore this email.\n\n"+
+            "Best regards,\n\nGig Space Team",
+        UserName, otp)
+		
+    msg := "From: " + from + "\n" +
+        "To: " + UserEmail + "\n" +
+        "Subject: " + subject + "\n\n" +
+        body
+
+    smtpHost := "smtp.gmail.com"
+    smtpPort := "587"
+    auth := smtp.PlainAuth("", from, password, smtpHost)
+    return otp, smtp.SendMail(smtpHost+":"+smtpPort, auth, from, []string{UserEmail}, []byte(msg))
+}

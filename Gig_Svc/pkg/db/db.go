@@ -31,5 +31,6 @@ func InitializeDB(DB string) (*gorm.DB, *s3.S3) {
 func autoMigrate(db *gorm.DB) {
 	db.AutoMigrate(
 		&model.Gig{},
+		&model.Image{},
 	)
 }

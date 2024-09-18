@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
@@ -10,9 +9,15 @@ type Gig struct {
 	Title        string
 	Description  string
 	Category     uint
-	FrelancerID  uint
+	FreelancerID uint
 	Price        float64
 	DeliveryDays int
 	Revisions    int
-	Image_Urls   pq.StringArray `gorm:"type:text[]"`
+	Images       []Image `gorm:"foreignKey:GigID"` // Relationship to Images
+}
+
+type Image struct {
+	gorm.Model
+	GigID uint
+	Url   string
 }

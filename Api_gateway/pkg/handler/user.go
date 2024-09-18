@@ -3,6 +3,7 @@ package handler
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"strconv"
 	"time"
@@ -31,9 +32,11 @@ func NewUserHandler(userConn proto.UserServiceClient) *UserHandler {
 // @Accept  json
 // @Produce  json
 // @Param  request body helper.SignupData true "Signup Request"
+// @Param role query string true "User role" Enums(freelancer, client)
 // @Router /user/signup [post]
 func (h *UserHandler) Signup(c *fiber.Ctx) error {
 	var req helper.SignupData
+	role := c.Query("role")
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "cannot parse JSON",
@@ -53,7 +56,7 @@ func (h *UserHandler) Signup(c *fiber.Ctx) error {
 		Password:  hashPassword,
 		Country:   req.Country,
 		Phone:     req.Phone,
-		Role:      req.Role,
+		Role:      role,
 	})
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -271,6 +274,94 @@ func (h *UserHandler) UploadProfilePhoto(c *fiber.Ctx) error {
 	})
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to upload photo")
+	}
+	return c.Status(int(res.Status)).JSON(res)
+}
+
+// @Summary Forgot Password
+// @Description Sends a forgot password request to the user's email address. The user will receive an OTP to reset the password.
+// @Tags User
+// @Accept application/x-www-form-urlencoded
+// @Produce application/json
+// @Param email formData string true "User Email"
+// @Router /user/forgot-password [post]
+func (h *UserHandler) ForgotPasswordReq(c *fiber.Ctx) error {
+	email := c.FormValue("email")
+	res, err := h.userClient.ForgotPassword(context.Background(), &proto.FP_Req{
+		Email: email,
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(int(res.Status)).JSON(res)
+}
+
+// @Summary Reset Password
+// @Description Allows the user to reset their password using the OTP and new password values.
+// @Tags User
+// @Accept application/x-www-form-urlencoded
+// @Produce application/json
+// @Param otp formData string true "OTP sent to user email"
+// @Param pwd1 formData string true "New password"
+// @Param pwd2 formData string true "Confirm new password"
+// @Router /user/reset-password [post]
+func (h *UserHandler) ResetPassword(c *fiber.Ctx) error {
+	otp := c.FormValue("otp")
+	pwd1 := c.FormValue("pwd1")
+	pwd2 := c.FormValue("pwd2")
+	if pwd1 != pwd2 {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Password Doesn't Match.",
+		})
+	}
+	hashPassword, err := helper.HashPassword(pwd2)
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	res, err := h.userClient.ResetPassword(context.Background(), &proto.ResetPwdReq{
+		Otp:      otp,
+		Password: hashPassword,
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(int(res.Status)).JSON(res)
+}
+
+// @Summary Update user address
+// @Tags User
+// @Description Update the user's address (city, district, state)
+// @Param city formData string false "City"
+// @Param district formData string false "District"
+// @Param state formData string false "State"
+// @Router /user/address [post]
+func (h *UserHandler) UpdateAddress(c *fiber.Ctx) error {
+	city := c.FormValue("city")
+	district := c.FormValue("district")
+	state := c.FormValue("state")
+	userid, ok := c.Locals("userID").(uint)
+	fmt.Println("userid= ", userid)
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "invalid userID type",
+		})
+	}
+	res, err := h.userClient.UpdateAddress(context.Background(), &proto.AddressReq{
+		Id:       uint32(userid),
+		City:     city,
+		State:    state,
+		District: district,
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 	return c.Status(int(res.Status)).JSON(res)
 }

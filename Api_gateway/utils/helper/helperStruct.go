@@ -7,7 +7,6 @@ type SignupData struct {
 	Password  string `json:"userpassword"`
 	Country   string `json:"country"`
 	Phone     string `json:"phone"`
-	Role      string `json:"role"`
 }
 
 type LoginData struct {

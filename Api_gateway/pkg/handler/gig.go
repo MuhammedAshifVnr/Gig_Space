@@ -84,7 +84,7 @@ func (h *GigHandler) CreateGig(c *fiber.Ctx) error {
 	})
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
-			"error": err,
+			"error": err.Error(),
 		})
 	}
 	return c.Status(200).JSON(fiber.Map{
@@ -99,7 +99,7 @@ func (h *GigHandler) CreateGig(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Router /gig/user [get]
-func (h *GigHandler)GetGigByUserID(c *fiber.Ctx)error{
+func (h *GigHandler) GetGigByUserID(c *fiber.Ctx) error {
 	user := c.Locals("userID")
 	userid, ok := user.(uint)
 	if !ok {
@@ -107,14 +107,117 @@ func (h *GigHandler)GetGigByUserID(c *fiber.Ctx)error{
 			"error": "userID is of invalid type",
 		})
 	}
-	res,err:=h.GigClinet.GetAllGigByID(context.Background(),&proto.GetAllGigsByIDReq{Id: uint32(userid)})
-	if err !=nil{
+	res, err := h.GigClinet.GetGigsByFreelancerID(context.Background(), &proto.GetGigsByFreelancerIDRequest{FreelancerId: uint64(userid)})
+	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
-			"error":err.Error(),
+			"error": err.Error(),
 		})
 	}
 	return c.Status(200).JSON(fiber.Map{
-		"data":res,
-		"status":200,
+		"data":   res,
+		"status": 200,
 	})
+}
+
+// @Summary Update an existing gig
+// @Description Updates the details of an existing gig by ID, including title, description, category, delivery days, revisions, price, and images.
+// @Tags Gigs
+// @Accept multipart/form-data
+// @Produce application/json
+// @Param id path string true "Gig ID"
+// @Param title formData string false "Title of the gig"
+// @Param description formData string false "Description of the gig"
+// @Param category formData string false "Category of the gig"
+// @Param delivery formData int false "Delivery days"
+// @Param revisions formData int false "Number of revisions"
+// @Param price formData int false "Price of the gig"
+// @Param images formData file false "Images for the gig (multiple files allowed)"
+// @Router /gig/{id} [put]
+func (h *GigHandler) UpdaeteGig(c *fiber.Ctx) error {
+	Id := c.Params("id")
+	title := c.FormValue("title")
+	description := c.FormValue("description")
+	category := c.FormValue("category")
+	deliveryStr := c.FormValue("delivery")
+	revisionsStr := c.FormValue("revisions")
+	priceS := c.FormValue("price")
+	sellerID := c.Locals("userID")
+	userid, ok := sellerID.(uint)
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "userID is of invalid type",
+		})
+	}
+	price, _ := strconv.Atoi(priceS)
+	GigID, _ := strconv.Atoi(Id)
+	delivery, _ := strconv.Atoi(deliveryStr)
+	revisions, _ := strconv.Atoi(revisionsStr)
+	form, err := c.MultipartForm()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("Failed to upload images")
+	}
+	images := form.File["images"] // Get all the uploaded images
+
+	var imageBytesList [][]byte
+
+	for _, fileHeader := range images {
+		file, err := fileHeader.Open()
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).SendString("Failed to read image file")
+		}
+		defer file.Close()
+
+		// Convert image to bytes
+		imageBytes := make([]byte, fileHeader.Size)
+		file.Read(imageBytes)
+
+		// Append to the list
+		imageBytesList = append(imageBytesList, imageBytes)
+	}
+	res, err := h.GigClinet.UpdateGigByID(context.Background(), &proto.UpdateGigRequest{
+		Id:                uint64(GigID),
+		Title:             title,
+		Description:       description,
+		Category:          category,
+		UserId:            uint32(userid),
+		Price:             float64(price),
+		DeliveryDays:      int64(delivery),
+		NumberOfRevisions: int64(revisions),
+		Images:            imageBytesList,
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err,
+		})
+	}
+	return c.Status(int(res.Status)).JSON(res)
+
+}
+
+// @Summary Delete an existing gig
+// @Description Deletes a gig by its ID, ensuring the user is authorized to delete the gig.
+// @Tags Gigs
+// @Produce application/json
+// @Param GigID path string true "Gig ID"
+// @Router /gig/{GigID} [delete]
+func (h *GigHandler) DeleteGig(c *fiber.Ctx) error {
+	id := c.Params("GigID")
+	gigID, _ := strconv.Atoi(id)
+	userid, ok := c.Locals("userID").(uint)
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "invalid userID type",
+		})
+	}
+
+	res, err := h.GigClinet.DeleteGigByID(context.Background(), &proto.DeleteReq{
+		GigId:  uint32(gigID),
+		UserId: uint32(userid),
+	})
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err,
+		})
+	}
+	return c.Status(int(res.Status)).JSON(res)
 }

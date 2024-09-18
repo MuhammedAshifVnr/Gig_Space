@@ -36,3 +36,12 @@ type ProfilePhoto struct {
 	User   User
 	Photo  string
 }
+
+type Address struct {
+	gorm.Model
+	User_id  uint
+	User     User
+	State    string
+	District string
+	City     string
+}
