@@ -153,3 +153,26 @@ func (s *UserService) UpdateAddress(ctx context.Context, req *proto.AddressReq) 
 	}, nil
 }
 
+func (s *UserService) UpdatRole(ctx context.Context, req *proto.RoleReq) (*proto.CommonRes, error) {
+	user, err := s.reops.GetUserByID(uint(req.Id))
+	if err != nil {
+		return nil, err
+	}
+	var role string
+	if user.Role == "client" {
+		role = "freelancer"
+		if err := s.reops.RoleChange("freelancer", uint(req.Id)); err != nil {
+			return nil, err
+		}
+	} else {
+		role = "clinet"
+		if err := s.reops.RoleChange("client", uint(req.Id)); err != nil {
+			return nil, err
+		}
+	}
+
+	return &proto.CommonRes{
+		Message: "Role Changed into " + role,
+		Status:  200,
+	}, nil
+}

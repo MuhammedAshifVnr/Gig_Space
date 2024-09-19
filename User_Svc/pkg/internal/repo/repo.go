@@ -253,3 +253,9 @@ func (r *UserRepo) UpdateAddress(add model.Address) error {
 	err := r.DB.Exec(query, add.State, add.District, add.City, add.ID, time.Now()).Error
 	return err
 }
+
+func (r *UserRepo) RoleChange(role string, id uint) error {
+	query := `UPDATE users SET role = $1 WHERE id = $2`
+	err := r.DB.Exec(query, role, id)
+	return err.Error
+}

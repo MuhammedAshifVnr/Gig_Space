@@ -20,5 +20,5 @@ func UserProfile(r fiber.Router, handller *handler.UserHandler) {
 	r.Delete("/skill/:Skill", middleware.Auth(Role), handller.DeleteSkill)
 	r.Post("/profile-photo", middleware.Auth(Role), handller.UploadProfilePhoto)
 	r.Post("/address", middleware.Auth(Role), handller.UpdateAddress)
-
+	r.Put("/role", middleware.Auth(Role), handller.RoleChange)
 }

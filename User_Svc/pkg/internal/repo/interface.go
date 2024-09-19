@@ -40,4 +40,5 @@ type RepoInter interface {
 	UpdateAddress(add model.Address) error
 	CreateAddress(State, District, City string, id int) error
 	GetAddress(id uint) model.Address
+	RoleChange(role string, id uint) error
 }

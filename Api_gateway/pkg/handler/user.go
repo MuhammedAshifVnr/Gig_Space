@@ -365,3 +365,22 @@ func (h *UserHandler) UpdateAddress(c *fiber.Ctx) error {
 	}
 	return c.Status(int(res.Status)).JSON(res)
 }
+
+// @Summary Change the role of a user
+// @Description Updates the role of the user based on the user ID in the request context.
+// @Tags User
+// @Accept json
+// @Produce json
+// @Router /user/role [put]
+func (h *UserHandler) RoleChange(c *fiber.Ctx) error {
+	userID, _ := c.Locals("userID").(uint)
+	res, err := h.userClient.UpdatRole(context.Background(), &proto.RoleReq{
+		Id: uint32(userID),
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(int(res.Status)).JSON(res)
+}

@@ -608,6 +608,22 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/user/role": {
+            "put": {
+                "description": "Updates the role of the user based on the user ID in the request context.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Change the role of a user",
+                "responses": {}
+            }
+        },
         "/user/signup": {
             "post": {
                 "description": "Create a new user account",

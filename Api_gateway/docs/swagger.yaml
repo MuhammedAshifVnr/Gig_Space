@@ -455,6 +455,18 @@ paths:
       summary: Reset Password
       tags:
       - User
+  /user/role:
+    put:
+      consumes:
+      - application/json
+      description: Updates the role of the user based on the user ID in the request
+        context.
+      produces:
+      - application/json
+      responses: {}
+      summary: Change the role of a user
+      tags:
+      - User
   /user/signup:
     post:
       consumes:
