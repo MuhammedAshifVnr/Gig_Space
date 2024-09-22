@@ -3,7 +3,7 @@ module github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc
 go 1.22.0
 
 require (
-	github.com/MuhammedAshifVnr/Gig_Space_Proto v1.0.46
+	github.com/MuhammedAshifVnr/Gig_Space_Proto v1.0.53
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/spf13/viper v1.19.0
 	google.golang.org/grpc v1.66.0

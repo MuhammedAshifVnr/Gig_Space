@@ -2,10 +2,11 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log"
 
-	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/pkg/internal/model"
 	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/pkg/internal/repo"
+	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/pkg/model"
 	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/utils/convert"
 	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/utils/upimage"
 	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
@@ -13,17 +14,19 @@ import (
 )
 
 type GigService struct {
-	repos      repo.RepoInter
-	s3         *s3.S3
-	userClient proto.UserServiceClient
+	repos        repo.RepoInter
+	s3           *s3.S3
+	userClient   proto.UserServiceClient
+	searchClient proto.SearchServiceClient
 	proto.UnimplementedGigServiceServer
 }
 
-func NewGigService(repo repo.RepoInter, s3Svc *s3.S3, UserClient proto.UserServiceClient) *GigService {
+func NewGigService(repo repo.RepoInter, s3Svc *s3.S3, UserClient proto.UserServiceClient, SearchClient proto.SearchServiceClient) *GigService {
 	return &GigService{
-		repos:      repo,
-		s3:         s3Svc,
-		userClient: UserClient,
+		repos:        repo,
+		s3:           s3Svc,
+		searchClient: SearchClient,
+		userClient:   UserClient,
 	}
 }
 
@@ -56,9 +59,26 @@ func (s *GigService) CreateGig(ctx context.Context, req *proto.CreateGigReq) (*p
 
 		gig.Images = append(gig.Images, model.Image{Url: imageUrl})
 	}
-	err = s.repos.CreateGgi(gig)
+	resGig, err := s.repos.CreateGgi(gig)
 	if err != nil {
+		fmt.Println("--", err.Error())
 		return &proto.EmptyResponse{}, err
+	}
+	fmt.Println("gig -", resGig.ID)
+	_, err = s.searchClient.IndexGig(context.Background(), &proto.IndexGigRequest{
+		Id:           uint64(resGig.ID),
+		Title:        gig.Title,
+		Description:  gig.Description,
+		Category:     req.Category,
+		Price:        float32(gig.Price),
+		DeliveryDays: int32(gig.DeliveryDays),
+		Revisions:    int32(gig.Revisions),
+		FreelancerId: uint64(gig.FreelancerID),
+		Image:        gig.Images[0].Url,
+	})
+	if err != nil {
+		fmt.Println("-==-", err.Error())
+		return nil, err
 	}
 	return &proto.EmptyResponse{}, nil
 }

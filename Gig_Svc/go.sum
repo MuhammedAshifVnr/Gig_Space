@@ -1,5 +1,5 @@
-github.com/MuhammedAshifVnr/Gig_Space_Proto v1.0.46 h1:5+PjlVzCYLXajcp8hrV6iz+D/rp3c63zVPynJHqPjX8=
-github.com/MuhammedAshifVnr/Gig_Space_Proto v1.0.46/go.mod h1:NzaZy7x+wNnLMbKsfkZVyN6aA6HP4dnFzW+QPdeaM90=
+github.com/MuhammedAshifVnr/Gig_Space_Proto v1.0.53 h1:Bqv6eQXEdVQxjTUBOjMQHfDjFT0AyV6nw6lu2zqipxw=
+github.com/MuhammedAshifVnr/Gig_Space_Proto v1.0.53/go.mod h1:NzaZy7x+wNnLMbKsfkZVyN6aA6HP4dnFzW+QPdeaM90=
 github.com/aws/aws-sdk-go v1.55.5 h1:KKUZBfBoyqy5d3swXyiC7Q76ic40rYcbqH7qjh59kzU=
 github.com/aws/aws-sdk-go v1.55.5/go.mod h1:eRwEWoyTWFMVYVQzKMNHWP5/RV4xIUGMQfXQHfHkpNU=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

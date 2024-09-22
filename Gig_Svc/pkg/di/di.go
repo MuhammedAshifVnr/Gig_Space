@@ -9,10 +9,11 @@ import (
 )
 
 func InitializeService() *service.GigService {
-	db,s3Svc := db.InitializeDB(viper.GetString("DSN"))
+	db, s3Svc := db.InitializeDB(viper.GetString("DSN"))
 	repo := repo.NewGigRepository(db)
-	userClient:=client.NewUserClinet()
-	service := service.NewGigService(repo,s3Svc,userClient)
+	userClient := client.NewUserClinet()
+	searchClient := client.NewSearchClinet()
+	service := service.NewGigService(repo, s3Svc, userClient, searchClient)
 
 	return service
 }

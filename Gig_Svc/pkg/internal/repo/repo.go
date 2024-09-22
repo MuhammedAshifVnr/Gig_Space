@@ -3,7 +3,7 @@ package repo
 import (
 	"fmt"
 
-	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/pkg/internal/model"
+	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/pkg/model"
 
 	"gorm.io/gorm"
 )
@@ -18,12 +18,12 @@ func NewGigRepository(db *gorm.DB) *GigRepo {
 	}
 }
 
-func (r *GigRepo) CreateGgi(gig model.Gig) error {
+func (r *GigRepo) CreateGgi(gig model.Gig) (model.Gig, error) {
 	err := r.DB.Create(&gig).Error
 	if err != nil {
-		return err
+		return model.Gig{}, err
 	}
-	return nil
+	return gig, nil
 }
 
 func (r *GigRepo) GetGigsByFreelancerID(freelancerID uint) ([]model.Gig, error) {
@@ -57,14 +57,14 @@ func (r *GigRepo) DeleteImages(id uint) error {
 	return err
 }
 
-func (r *GigRepo)DeleteGig(id,user_id uint)error{
+func (r *GigRepo) DeleteGig(id, user_id uint) error {
 	return r.DB.Transaction(func(tx *gorm.DB) error {
 
 		if err := tx.Exec(`DELETE FROM images WHERE gig_id = ?`, id).Error; err != nil {
 			return err
 		}
 
-		if err := tx.Exec(`DELETE FROM gigs WHERE id = ? AND freelancer_id = ?`, id,user_id).Error; err != nil {
+		if err := tx.Exec(`DELETE FROM gigs WHERE id = ? AND freelancer_id = ?`, id, user_id).Error; err != nil {
 			return err
 		}
 
