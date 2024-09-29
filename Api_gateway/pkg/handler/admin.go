@@ -222,3 +222,68 @@ func (h *UserHandler) UserBlock(c *fiber.Ctx) error {
 	}
 	return c.Status(int(res.Status)).JSON(res)
 }
+
+// @Summary Create a new payment plan
+// @Description This endpoint allows you to create a new payment plan by providing a name, price, and period.
+// @Tags Payment
+// @Accept application/x-www-form-urlencoded
+// @Produce application/json
+// @Param name formData string true "Name of the plan"
+// @Param price formData int true "Price of the plan in cents"
+// @Param period query string true "Period of the plan" Enums(monthly, yearly)
+// @Router /admin/create-plan [post]
+func (h *PaymentHandler) CreatePlan(c *fiber.Ctx) error {
+	Name := c.FormValue("name")
+	Price, _ := strconv.Atoi(c.FormValue("price"))
+	Period := c.FormValue("period")
+
+	if Name == "" || Price == 0 || Period == "" {
+		return c.Status(400).JSON("eroor")
+	}
+	res, err := h.PaymentClient.CreatePlan(context.Background(), &proto.CreatePlanReq{
+		Name:     Name,
+		Amount:   int64(Price),
+		Period:   Period,
+		Interval: 1,
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(int(res.Status)).JSON(res)
+}
+
+// @Summary Get all payment plans
+// @Description This endpoint retrieves a list of all available payment plans.
+// @Tags Payment
+// @Produce application/json
+// @Router /admin/plans [get]
+func (h *PaymentHandler) GetPlans(c *fiber.Ctx) error {
+	res, err := h.PaymentClient.GetPlan(context.Background(), &proto.EmptyReq{})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(200).JSON(res)
+}
+
+// @Summary Delete a payment plan
+// @Description This endpoint deletes a payment plan based on the provided PlanID.
+// @Tags Payment
+// @Param PlanID path string true "ID of the plan to delete"
+// @Produce application/json
+// @Router /admin/plan/{PlanID} [delete]
+func (h *PaymentHandler) DeletPlan(c *fiber.Ctx) error {
+	id := c.Params("PlanID")
+	res, err := h.PaymentClient.DeletePlan(context.Background(), &proto.DeletePlanReq{
+		PlanId: id,
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(200).JSON(res)
+}

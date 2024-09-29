@@ -39,3 +39,24 @@ func (s *SearchService) IndexGig(ctx context.Context, req *proto.IndexGigRequest
 	}
 	return &proto.SearchEmptyRes{}, nil
 }
+
+func (s *SearchService) SearchGig(ctx context.Context, req *proto.SearchGigReq) (*proto.SearchGigRes, error) {
+	gigs, err := s.repo.SearchGigs(ctx, req.Query, req.PriceUpto, req.RevisionsMin, req.DeliveryDaysMax)
+	if err != nil {
+		return nil, err
+	}
+	var responseGigs []*proto.ResultGig
+	for _, gig := range gigs {
+		responseGigs = append(responseGigs, &proto.ResultGig{
+			Id:           uint32(gig.Id),
+			Title:        gig.Title,
+			Description:  gig.Description,
+			Image:        gig.Images,
+			Price:        float32(gig.Price),
+			Revisions:    gig.Revisions,
+			DeliveryDays: gig.DeliveryDays,
+		})
+	}
+
+	return &proto.SearchGigRes{Gigs: responseGigs}, nil
+}

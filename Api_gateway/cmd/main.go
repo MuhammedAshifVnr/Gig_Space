@@ -19,20 +19,6 @@ import (
 // @version 1.0
 // @description This is the API Gateway for the Flexi Worke project
 
-
-// PingExample godoc
-// @Summary ping example
-// @Schemes
-// @Description do ping
-// @Tags example
-// @Accept json
-// @Produce json
-// @Success 200 {string} string "pong"
-// @Router /ping [get]
-func PingExample(c *fiber.Ctx) error {
-    return c.SendString("pong")
-}
-
 func main() {
 	err := config.LoadConfig()
 	if err != nil {
@@ -47,8 +33,16 @@ func main() {
 		Expiration: 60 * time.Second,
 	}))
 
+	// app.Get("/", func(c *fiber.Ctx) error {
+    //     // Render the HTML file from the 'views' folder
+	// 	fmt.Println("//")
+    //     return c.Render("temp/tests.html", fiber.Map{
+    //         "Title": "Fiber HTML Example",
+    //     })
+    // })
+
 	app.Get("/swagger/*", swagger.HandlerDefault)
-	app.Get("/ping", PingExample)
+	app.Static("/temp", "./temp")
 	di.InitializeRoutes(app)
 
 	if err := app.Listen(viper.GetString("PORT")); err != nil {

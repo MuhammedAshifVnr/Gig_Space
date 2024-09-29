@@ -18,15 +18,17 @@ import (
 )
 
 type UserService struct {
-	reops repo.RepoInter
-	s3    *s3.S3
+	reops         repo.RepoInter
+	PaymentClient proto.PaymentServiceClient
+	s3            *s3.S3
 	proto.UnimplementedUserServiceServer
 }
 
-func NewUserService(repo repo.RepoInter, S3 *s3.S3) *UserService {
+func NewUserService(repo repo.RepoInter, S3 *s3.S3, payClient proto.PaymentServiceClient) *UserService {
 	return &UserService{
-		reops: repo,
-		s3:    S3,
+		PaymentClient: payClient,
+		reops:         repo,
+		s3:            S3,
 	}
 }
 
@@ -146,7 +148,11 @@ func (s *UserService) Login(ctx context.Context, req *proto.LoginReq) (*proto.Lo
 			Message: "User is Bolcked",
 		}, nil
 	}
-	token, err := jwt.GenerateJwtToken(user.Email, user.ID, "user")
+	res, err := s.PaymentClient.GetSubDetails(context.Background(), &proto.GetSubReq{UserId: uint32(user.ID)})
+	if err!=nil{
+		return nil,err
+	}
+	token, err := jwt.GenerateJwtToken(user.Email, user.ID, "user",res.ExpiryTime)
 	if err != nil {
 		return &proto.LoginRes{
 			Message: "Error form jwt creation ",
@@ -182,8 +188,8 @@ func (s *UserService) ForgotPassword(ctx context.Context, req *proto.FP_Req) (*p
 	}, nil
 }
 
-func (s *UserService)ResetPassword(ctx context.Context,req *proto.ResetPwdReq)(*proto.CommonRes,error){
-	val,err:=s.reops.VerifyingEmail(req.Otp,"")
+func (s *UserService) ResetPassword(ctx context.Context, req *proto.ResetPwdReq) (*proto.CommonRes, error) {
+	val, err := s.reops.VerifyingEmail(req.Otp, "")
 	if err == redis.Nil {
 		return &proto.CommonRes{}, errors.New("this OTP was expired")
 	}
@@ -192,12 +198,12 @@ func (s *UserService)ResetPassword(ctx context.Context,req *proto.ResetPwdReq)(*
 	if err != nil {
 		return &proto.CommonRes{}, errors.New("Could not unmarshal user: " + err.Error())
 	}
-	err=s.reops.ResetPassword(user.Email,req.Password)
-	if err!=nil{
-		return &proto.CommonRes{},err
+	err = s.reops.ResetPassword(user.Email, req.Password)
+	if err != nil {
+		return &proto.CommonRes{}, err
 	}
 	return &proto.CommonRes{
 		Message: "Password Updated",
-		Status: 200,
-	},nil
+		Status:  200,
+	}, nil
 }

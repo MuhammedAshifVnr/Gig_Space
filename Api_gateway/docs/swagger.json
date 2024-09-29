@@ -98,6 +98,49 @@
                 "responses": {}
             }
         },
+        "/admin/create-plan": {
+            "post": {
+                "description": "This endpoint allows you to create a new payment plan by providing a name, price, and period.",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment"
+                ],
+                "summary": "Create a new payment plan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the plan",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Price of the plan in cents",
+                        "name": "price",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "monthly",
+                            "yearly"
+                        ],
+                        "type": "string",
+                        "description": "Period of the plan",
+                        "name": "period",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/admin/login": {
             "post": {
                 "description": "Log in as an admin using email and password.",
@@ -122,6 +165,41 @@
                         }
                     }
                 ],
+                "responses": {}
+            }
+        },
+        "/admin/plan/{PlanID}": {
+            "delete": {
+                "description": "This endpoint deletes a payment plan based on the provided PlanID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment"
+                ],
+                "summary": "Delete a payment plan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID of the plan to delete",
+                        "name": "PlanID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/admin/plans": {
+            "get": {
+                "description": "This endpoint retrieves a list of all available payment plans.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment"
+                ],
+                "summary": "Get all payment plans",
                 "responses": {}
             }
         },
@@ -385,9 +463,9 @@
                 "responses": {}
             }
         },
-        "/ping": {
-            "get": {
-                "description": "do ping",
+        "/payments/subscription-renew/{PlanID}": {
+            "post": {
+                "description": "This endpoint renews the subscription for a given user and plan.",
                 "consumes": [
                     "application/json"
                 ],
@@ -395,17 +473,93 @@
                     "application/json"
                 ],
                 "tags": [
-                    "example"
+                    "Subscription"
                 ],
-                "summary": "ping example",
+                "summary": "Renew user subscription",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Plan ID",
+                        "name": "PlanID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/payments/subscription/{PlanID}": {
+            "post": {
+                "description": "Create a subscription payment for a user based on the selected plan.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Create Subscription Payment",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Plan ID",
+                        "name": "PlanID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "pong",
+                        "description": "HTML rendered with subscription details",
                         "schema": {
                             "type": "string"
                         }
                     }
                 }
+            }
+        },
+        "/search/gigs": {
+            "get": {
+                "description": "This endpoint allows searching for gigs based on a query string, price range, revisions, and delivery days.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Search"
+                ],
+                "summary": "Search gigs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search query to match title, description, or category",
+                        "name": "query",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Maximum price filter",
+                        "name": "price_upto",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Minimum number of revisions filter",
+                        "name": "revisions_min",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Maximum delivery days filter",
+                        "name": "delivery_days",
+                        "in": "query"
+                    }
+                ],
+                "responses": {}
             }
         },
         "/user/address": {

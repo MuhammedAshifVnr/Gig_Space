@@ -6,16 +6,19 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-const role ="AdminToken"
+const role = "AdminToken"
 
-func AdminRouters(r fiber.Router, handller *handler.UserHandler){
-	r.Post("/login",handller.AdminLogin)
-	r.Post("/category",middleware.Auth(role),handller.AddCategory)
-	r.Post("/skill",middleware.Auth(role),handller.AddSkill)
-	r.Get("/category",middleware.Auth(role),handller.GetCategory)
-	r.Get("/skills",middleware.Auth(role),handller.GetSkills)
-	r.Delete("/skills/:skillID",middleware.Auth(role),handller.AdDeleteSkill)
-	r.Delete("/category/:CatID",middleware.Auth(role),handller.AdDeleteCategory)
-	r.Get("/users",middleware.Auth(role),handller.GetAllUsers)
-	r.Post("/block/:userID",middleware.Auth(role),handller.UserBlock)
+func AdminRouters(r fiber.Router, handller *handler.UserHandler, payHandller *handler.PaymentHandler) {
+	r.Post("/login", handller.AdminLogin)
+	r.Post("/category", middleware.Auth(role), handller.AddCategory)
+	r.Post("/skill", middleware.Auth(role), handller.AddSkill)
+	r.Get("/category", middleware.Auth(role), handller.GetCategory)
+	r.Get("/skills", middleware.Auth(role), handller.GetSkills)
+	r.Delete("/skills/:skillID", middleware.Auth(role), handller.AdDeleteSkill)
+	r.Delete("/category/:CatID", middleware.Auth(role), handller.AdDeleteCategory)
+	r.Get("/users", middleware.Auth(role), handller.GetAllUsers)
+	r.Post("/block/:userID", middleware.Auth(role), handller.UserBlock)
+	r.Post("/create-plan", middleware.Auth(role), payHandller.CreatePlan)
+	r.Get("/plans", middleware.Auth(role), payHandller.GetPlans)
+	r.Delete("/plan/:PlanID", middleware.Auth(role), payHandller.DeletPlan)
 }

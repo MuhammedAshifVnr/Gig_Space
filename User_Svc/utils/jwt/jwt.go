@@ -12,15 +12,17 @@ type Claims struct {
 	UserID    uint
 	UserEmail string
 	Role      string
+	SubscriptionExpiry int64
 	jwt.StandardClaims
 }
 
-func GenerateJwtToken(Email string, ID uint, Role string) (string, error) {
+func GenerateJwtToken(Email string, ID uint, Role string,Expiry int64) (string, error) {
 
 	claims := Claims{
 		UserID:    ID,
 		UserEmail: Email,
 		Role:      Role,
+		SubscriptionExpiry: Expiry,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
 		},

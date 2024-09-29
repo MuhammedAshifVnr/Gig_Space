@@ -1,4 +1,4 @@
-package clinet
+package client
 
 import (
 	"log"
@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func NewGigClinet() proto.GigServiceClient{
+func NewGigClient() proto.GigServiceClient {
 	gigsvc, err := grpc.Dial(viper.GetString("GigConn"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("failed to connect to Gig service: %v", err)

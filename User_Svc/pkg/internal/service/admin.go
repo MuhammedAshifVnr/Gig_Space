@@ -24,7 +24,7 @@ func (s *UserService) AdminLogin(ctx context.Context, req *proto.AdLoginReq) (*p
 			Status:  http.StatusUnauthorized,
 		}, nil
 	}
-	token, err := jwt.GenerateJwtToken(admin.Email, admin.ID, "admin")
+	token, err := jwt.GenerateJwtToken(admin.Email, admin.ID, "admin",0)
 	if err != nil {
 		return &proto.CommonRes{
 			Message: "Error form jwt creation ",

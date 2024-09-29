@@ -107,6 +107,37 @@ paths:
       summary: Admin delete skill
       tags:
       - Admin
+  /admin/create-plan:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: This endpoint allows you to create a new payment plan by providing
+        a name, price, and period.
+      parameters:
+      - description: Name of the plan
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Price of the plan in cents
+        in: formData
+        name: price
+        required: true
+        type: integer
+      - description: Period of the plan
+        enum:
+        - monthly
+        - yearly
+        in: query
+        name: period
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Create a new payment plan
+      tags:
+      - Payment
   /admin/login:
     post:
       consumes:
@@ -125,6 +156,30 @@ paths:
       summary: Admin login
       tags:
       - Admin
+  /admin/plan/{PlanID}:
+    delete:
+      description: This endpoint deletes a payment plan based on the provided PlanID.
+      parameters:
+      - description: ID of the plan to delete
+        in: path
+        name: PlanID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Delete a payment plan
+      tags:
+      - Payment
+  /admin/plans:
+    get:
+      description: This endpoint retrieves a list of all available payment plans.
+      produces:
+      - application/json
+      responses: {}
+      summary: Get all payment plans
+      tags:
+      - Payment
   /admin/skill:
     post:
       consumes:
@@ -307,21 +362,74 @@ paths:
       summary: Get Gigs by User ID
       tags:
       - Gigs
-  /ping:
-    get:
+  /payments/subscription-renew/{PlanID}:
+    post:
       consumes:
       - application/json
-      description: do ping
+      description: This endpoint renews the subscription for a given user and plan.
+      parameters:
+      - description: Plan ID
+        in: path
+        name: PlanID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Renew user subscription
+      tags:
+      - Subscription
+  /payments/subscription/{PlanID}:
+    post:
+      consumes:
+      - application/json
+      description: Create a subscription payment for a user based on the selected
+        plan.
+      parameters:
+      - description: Plan ID
+        in: path
+        name: PlanID
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: pong
+          description: HTML rendered with subscription details
           schema:
             type: string
-      summary: ping example
+      summary: Create Subscription Payment
       tags:
-      - example
+      - Payments
+  /search/gigs:
+    get:
+      consumes:
+      - application/json
+      description: This endpoint allows searching for gigs based on a query string,
+        price range, revisions, and delivery days.
+      parameters:
+      - description: Search query to match title, description, or category
+        in: query
+        name: query
+        type: string
+      - description: Maximum price filter
+        in: query
+        name: price_upto
+        type: number
+      - description: Minimum number of revisions filter
+        in: query
+        name: revisions_min
+        type: integer
+      - description: Maximum delivery days filter
+        in: query
+        name: delivery_days
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Search gigs
+      tags:
+      - Search
   /user/address:
     post:
       description: Update the user's address (city, district, state)

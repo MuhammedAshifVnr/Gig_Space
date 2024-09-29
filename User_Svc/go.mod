@@ -3,7 +3,7 @@ module github.com/MuhammedAshifVnr/Gig_Space/User_svc
 go 1.22.0
 
 require (
-	github.com/MuhammedAshifVnr/Gig_Space_Proto v1.0.51
+	github.com/MuhammedAshifVnr/Gig_Space_Proto v1.1.7
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/redis/go-redis/v9 v9.6.1
