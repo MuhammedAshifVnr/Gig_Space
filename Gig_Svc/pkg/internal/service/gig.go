@@ -31,7 +31,7 @@ func NewGigService(repo repo.RepoInter, s3Svc *s3.S3, UserClient proto.UserServi
 }
 
 func (s *GigService) CreateGig(ctx context.Context, req *proto.CreateGigReq) (*proto.EmptyResponse, error) {
-	CatRes, err := s.userClient.GetCategoryByName(context.Background(), &proto.CategoryName{Name: req.Category})
+	_, err := s.userClient.GetCategoryByName(context.Background(), &proto.CategoryName{Name: req.Category})
 	if err != nil {
 		return &proto.EmptyResponse{}, err
 	}
@@ -39,7 +39,7 @@ func (s *GigService) CreateGig(ctx context.Context, req *proto.CreateGigReq) (*p
 		Title:        req.Title,
 		Description:  req.Description,
 		FreelancerID: uint(req.UserId),
-		Category:     uint(CatRes.Id),
+		Category:     req.Category,
 		Price:        req.Price,
 		DeliveryDays: int(req.DeliveryDays),
 		Revisions:    int(req.NumberOfRevisions),
@@ -77,6 +77,11 @@ func (s *GigService) CreateGig(ctx context.Context, req *proto.CreateGigReq) (*p
 		Image:        gig.Images[0].Url,
 	})
 	if err != nil {
+		delErr := s.repos.DeleteGig(resGig.ID, gig.FreelancerID)
+		if delErr != nil {
+			fmt.Println("Failed to rollback database entry after Elasticsearch failure: ", delErr.Error())
+			return &proto.EmptyResponse{}, delErr
+		}
 		fmt.Println("-==-", err.Error())
 		return nil, err
 	}
@@ -100,7 +105,7 @@ func (s *GigService) GetGigsByFreelancerID(ctx context.Context, req *proto.GetGi
 			Id:           uint64(gig.ID),
 			Title:        gig.Title,
 			Description:  gig.Description,
-			Category:     uint32(gig.Category),
+			Category:     gig.Category,
 			FreelancerId: uint64(gig.FreelancerID),
 			Price:        float32(gig.Price),
 			DeliveryDays: int32(gig.DeliveryDays),
@@ -118,11 +123,11 @@ func (s *GigService) UpdateGigByID(ctx context.Context, req *proto.UpdateGigRequ
 		return nil, err
 	}
 	if req.Category != "" {
-		CatRes, err := s.userClient.GetCategoryByName(context.Background(), &proto.CategoryName{Name: req.Category})
+		_, err := s.userClient.GetCategoryByName(context.Background(), &proto.CategoryName{Name: req.Category})
 		if err != nil {
 			return nil, err
 		}
-		gig.Category = uint(CatRes.Id)
+		gig.Category = req.Category
 	}
 
 	if req.Title != "" {
@@ -157,11 +162,25 @@ func (s *GigService) UpdateGigByID(ctx context.Context, req *proto.UpdateGigRequ
 			gig.Images = append(gig.Images, model.Image{Url: imageUrl})
 		}
 	}
+
 	err = s.repos.UpdateGig(gig)
 	if err != nil {
 		return nil, err
 	}
-
+	_, err = s.searchClient.UpdateIndexGig(context.Background(), &proto.IndexGigRequest{
+		Id:           uint64(gig.ID),
+		Title:        gig.Title,
+		Description:  gig.Description,
+		Category:     gig.Category,
+		Price:        float32(gig.Price),
+		DeliveryDays: int32(gig.DeliveryDays),
+		Revisions:    int32(gig.Revisions),
+		FreelancerId: uint64(gig.FreelancerID),
+		Image:        gig.Images[0].Url,
+	})
+	if err != nil {
+		return nil, err
+	}
 	return &proto.CommonGigRes{
 		Message: "Updated Successfully",
 		Status:  200,
@@ -171,6 +190,13 @@ func (s *GigService) UpdateGigByID(ctx context.Context, req *proto.UpdateGigRequ
 
 func (s *GigService) DeleteGigByID(ctx context.Context, req *proto.DeleteReq) (*proto.CommonGigRes, error) {
 	err := s.repos.DeleteGig(uint(req.GigId), uint(req.UserId))
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.searchClient.DeleteGig(context.Background(), &proto.DeleteDocumentReq{
+		Id: req.GigId,
+	})
 	if err != nil {
 		return nil, err
 	}

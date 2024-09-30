@@ -8,7 +8,7 @@ type Gig struct {
 	gorm.Model
 	Title        string
 	Description  string
-	Category     uint
+	Category     string
 	FreelancerID uint
 	Price        float64
 	DeliveryDays int

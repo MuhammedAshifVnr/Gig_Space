@@ -187,7 +187,7 @@ func (h *GigHandler) UpdaeteGig(c *fiber.Ctx) error {
 	})
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
-			"error": err,
+			"error": err.Error(),
 		})
 	}
 	return c.Status(int(res.Status)).JSON(res)
@@ -216,7 +216,7 @@ func (h *GigHandler) DeleteGig(c *fiber.Ctx) error {
 	})
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err,
+			"error": err.Error(),
 		})
 	}
 	return c.Status(int(res.Status)).JSON(res)
