@@ -4,37 +4,28 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
-	"strings"
+	"time"
 
 	"github.com/MuhammedAshifVnr/Gig_Space/Search_Svc/pkg/model"
-	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
+	"github.com/redis/go-redis/v9"
 )
 
-type Repo struct {
-	esClient *elasticsearch.Client
-}
-
-func NewSearchRepository(es *elasticsearch.Client) *Repo {
-	return &Repo{esClient: es}
-}
-
-func (r *Repo) IndexGig(data model.Gig, index string) error {
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		return err
-	}
-	_, err = r.esClient.Index(index, strings.NewReader(string(jsonData)))
-	if err != nil {
-		log.Printf("Failed to index gig: %s", err)
-		return err
-	}
-
-	return nil
-}
-
 func (r *Repo) SearchGigs(ctx context.Context, query string, priceUpto float32, revisionsMin, deliveryDaysMax int32) ([]*model.Gig, error) {
+
+	key := fmt.Sprintf("search:%s:%f:%d:%d", query, priceUpto, revisionsMin, deliveryDaysMax)
+	result, err := r.GetCachedResponse(ctx, key)
+
+	if err == nil && result != "" {
+		log.Println("inside the redis")
+		var gigs []*model.Gig
+		if err := json.Unmarshal([]byte(result), &gigs); err == nil {
+			return gigs, nil
+		}
+	}
+
 	boolQuery := map[string]interface{}{
 		"bool": map[string]interface{}{
 			"must": []interface{}{
@@ -46,11 +37,10 @@ func (r *Repo) SearchGigs(ctx context.Context, query string, priceUpto float32, 
 					},
 				},
 			},
-			"filter": []interface{}{},  // Ensure filter is an array
+			"filter": []interface{}{},
 		},
 	}
 
-	// Adding filter conditions
 	if priceUpto > 0 {
 		boolQuery["bool"].(map[string]interface{})["filter"] = append(boolQuery["bool"].(map[string]interface{})["filter"].([]interface{}), map[string]interface{}{
 			"range": map[string]interface{}{
@@ -81,16 +71,14 @@ func (r *Repo) SearchGigs(ctx context.Context, query string, priceUpto float32, 
 		})
 	}
 
-	// Marshal the query
 	queryBody, err := json.Marshal(map[string]interface{}{
-		"query": boolQuery,  // Ensure "query" wraps the bool query
+		"query": boolQuery,
 	})
 	if err != nil {
 		log.Println("Error marshaling query:", err)
 		return nil, err
 	}
 
-	// Execute the search query
 	req := esapi.SearchRequest{
 		Index: []string{"gig"},
 		Body:  bytes.NewReader(queryBody),
@@ -108,7 +96,6 @@ func (r *Repo) SearchGigs(ctx context.Context, query string, priceUpto float32, 
 		return nil, nil
 	}
 
-	// Parse the search results
 	var searchResults struct {
 		Hits struct {
 			Hits []struct {
@@ -122,7 +109,6 @@ func (r *Repo) SearchGigs(ctx context.Context, query string, priceUpto float32, 
 		return nil, err
 	}
 
-	// Unmarshal the results into a list of gigs
 	var gigs []*model.Gig
 	for _, hit := range searchResults.Hits.Hits {
 		var gig model.Gig
@@ -131,5 +117,20 @@ func (r *Repo) SearchGigs(ctx context.Context, query string, priceUpto float32, 
 		}
 	}
 
+	cacheData, _ := json.Marshal(gigs)
+	r.CacheResponse(ctx, key, string(cacheData), time.Minute*10)
+
 	return gigs, nil
+}
+
+func (r *Repo) GetCachedResponse(ctx context.Context, key string) (string, error) {
+	result, err := r.RDB.Get(ctx, key).Result()
+	if err == redis.Nil {
+		return "", nil
+	}
+	return result, err
+}
+
+func (r *Repo) CacheResponse(ctx context.Context, key, value string, expiration time.Duration) error {
+	return r.RDB.Set(ctx, key, value, expiration).Err()
 }

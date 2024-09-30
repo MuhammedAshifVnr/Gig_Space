@@ -60,3 +60,34 @@ func (s *SearchService) SearchGig(ctx context.Context, req *proto.SearchGigReq) 
 
 	return &proto.SearchGigRes{Gigs: responseGigs}, nil
 }
+
+func (s *SearchService) UpdateIndexGig(ctx context.Context, req *proto.IndexGigRequest) (*proto.SearchEmptyRes, error) {
+	gig := model.Gig{
+		Id:           req.Id,
+		Title:        req.Title,
+		Description:  req.Description,
+		Category:     req.Category,
+		Price:        float64(req.Price),
+		DeliveryDays: req.DeliveryDays,
+		Revisions:    req.Revisions,
+		FreelancerId: req.FreelancerId,
+		Images:       req.Image,
+	}
+	err := s.repo.UpdateGig(gig, "gig")
+	if err != nil {
+		return nil, err
+	}
+	return &proto.SearchEmptyRes{}, nil
+}
+
+func (s *SearchService) DeleteGig(ctx context.Context, req *proto.DeleteDocumentReq) (*proto.SearchEmptyRes,error) {
+	docID, err := s.repo.GetDocId(uint(req.Id), "gig")
+	if err != nil {
+		return nil, err
+	}
+	err = s.repo.DeleteDocument(docID, "gig")
+	if err != nil {
+		return nil, err
+	}
+	return &proto.SearchEmptyRes{}, nil
+}
