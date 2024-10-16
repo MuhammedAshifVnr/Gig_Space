@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/pkg/internal/repo"
@@ -14,25 +13,28 @@ import (
 )
 
 type GigService struct {
-	repos        repo.RepoInter
-	s3           *s3.S3
-	userClient   proto.UserServiceClient
-	searchClient proto.SearchServiceClient
+	repos         repo.RepoInter
+	s3            *s3.S3
+	userClient    proto.UserServiceClient
+	searchClient  proto.SearchServiceClient
+	paymetnClient proto.PaymentServiceClient
 	proto.UnimplementedGigServiceServer
 }
 
-func NewGigService(repo repo.RepoInter, s3Svc *s3.S3, UserClient proto.UserServiceClient, SearchClient proto.SearchServiceClient) *GigService {
+func NewGigService(repo repo.RepoInter, s3Svc *s3.S3, UserClient proto.UserServiceClient, SearchClient proto.SearchServiceClient,payment proto.PaymentServiceClient) *GigService {
 	return &GigService{
 		repos:        repo,
 		s3:           s3Svc,
 		searchClient: SearchClient,
 		userClient:   UserClient,
+		paymetnClient: payment,
 	}
 }
 
 func (s *GigService) CreateGig(ctx context.Context, req *proto.CreateGigReq) (*proto.EmptyResponse, error) {
 	_, err := s.userClient.GetCategoryByName(context.Background(), &proto.CategoryName{Name: req.Category})
 	if err != nil {
+		log.Println("Faild to Find Category: ", err.Error())
 		return &proto.EmptyResponse{}, err
 	}
 	gig := model.Gig{
@@ -61,10 +63,9 @@ func (s *GigService) CreateGig(ctx context.Context, req *proto.CreateGigReq) (*p
 	}
 	resGig, err := s.repos.CreateGgi(gig)
 	if err != nil {
-		fmt.Println("--", err.Error())
+		log.Println("Failed to Create Gig: ", err.Error())
 		return &proto.EmptyResponse{}, err
 	}
-	fmt.Println("gig -", resGig.ID)
 	_, err = s.searchClient.IndexGig(context.Background(), &proto.IndexGigRequest{
 		Id:           uint64(resGig.ID),
 		Title:        gig.Title,
@@ -79,10 +80,10 @@ func (s *GigService) CreateGig(ctx context.Context, req *proto.CreateGigReq) (*p
 	if err != nil {
 		delErr := s.repos.DeleteGig(resGig.ID, gig.FreelancerID)
 		if delErr != nil {
-			fmt.Println("Failed to rollback database entry after Elasticsearch failure: ", delErr.Error())
+			log.Println("Failed to rollback database entry after Elasticsearch failure: ", delErr.Error())
 			return &proto.EmptyResponse{}, delErr
 		}
-		fmt.Println("-==-", err.Error())
+		log.Println("Failed to Create document in elastic : ", err.Error())
 		return nil, err
 	}
 	return &proto.EmptyResponse{}, nil
@@ -91,6 +92,7 @@ func (s *GigService) CreateGig(ctx context.Context, req *proto.CreateGigReq) (*p
 func (s *GigService) GetGigsByFreelancerID(ctx context.Context, req *proto.GetGigsByFreelancerIDRequest) (*proto.GetGigsByFreelancerIDResponse, error) {
 	gigs, err := s.repos.GetGigsByFreelancerID(uint(req.FreelancerId))
 	if err != nil {
+		log.Println("Failed to Find User Gigs: ", err.Error())
 		return &proto.GetGigsByFreelancerIDResponse{}, err
 	}
 	var grpcGigs []*proto.Gig
@@ -120,11 +122,13 @@ func (s *GigService) GetGigsByFreelancerID(ctx context.Context, req *proto.GetGi
 func (s *GigService) UpdateGigByID(ctx context.Context, req *proto.UpdateGigRequest) (*proto.CommonGigRes, error) {
 	gig, err := s.repos.GetGigByID(uint(req.Id))
 	if err != nil {
+		log.Println("Failed to Find Gig: ", err.Error())
 		return nil, err
 	}
 	if req.Category != "" {
 		_, err := s.userClient.GetCategoryByName(context.Background(), &proto.CategoryName{Name: req.Category})
 		if err != nil {
+			log.Println("Failed to Find Category: ", err.Error())
 			return nil, err
 		}
 		gig.Category = req.Category
@@ -165,6 +169,7 @@ func (s *GigService) UpdateGigByID(ctx context.Context, req *proto.UpdateGigRequ
 
 	err = s.repos.UpdateGig(gig)
 	if err != nil {
+		log.Println("Failed to Update Gig: ", err.Error())
 		return nil, err
 	}
 	_, err = s.searchClient.UpdateIndexGig(context.Background(), &proto.IndexGigRequest{
@@ -179,6 +184,7 @@ func (s *GigService) UpdateGigByID(ctx context.Context, req *proto.UpdateGigRequ
 		Image:        gig.Images[0].Url,
 	})
 	if err != nil {
+		log.Println("Failed to Update ES Document: ", err.Error())
 		return nil, err
 	}
 	return &proto.CommonGigRes{
@@ -191,6 +197,7 @@ func (s *GigService) UpdateGigByID(ctx context.Context, req *proto.UpdateGigRequ
 func (s *GigService) DeleteGigByID(ctx context.Context, req *proto.DeleteReq) (*proto.CommonGigRes, error) {
 	err := s.repos.DeleteGig(uint(req.GigId), uint(req.UserId))
 	if err != nil {
+		log.Println("Failed to delete Gig: ", err.Error())
 		return nil, err
 	}
 
@@ -198,6 +205,7 @@ func (s *GigService) DeleteGigByID(ctx context.Context, req *proto.DeleteReq) (*
 		Id: req.GigId,
 	})
 	if err != nil {
+		log.Println("Failed to Delete ES documetn: ", err.Error())
 		return nil, err
 	}
 	return &proto.CommonGigRes{

@@ -221,3 +221,26 @@ func (h *GigHandler) DeleteGig(c *fiber.Ctx) error {
 	}
 	return c.Status(int(res.Status)).JSON(res)
 }
+
+// @Summary Create an order
+// @Description Creates a new order for a specified gig using the gig ID.
+// @Tags Orders
+// @Accept json
+// @Produce json
+// @Param GigID path int true "Gig ID"
+// @Router /gig/order/{GigID} [post]
+func (h *GigHandler) CreateOrder(c *fiber.Ctx) error {
+	id := c.Params("GigID")
+	gigID, _ := strconv.Atoi(id)
+	userid, _ := c.Locals("userID").(uint)
+	res, err := h.GigClinet.CreateOrder(context.Background(), &proto.CreateOrderReq{
+		ClinetId: uint32(userid),
+		GigId:    uint32(gigID),
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(int(res.Status)).JSON(res)
+}

@@ -33,13 +33,13 @@ func main() {
 		Expiration: 60 * time.Second,
 	}))
 
-	// app.Get("/", func(c *fiber.Ctx) error {
-    //     // Render the HTML file from the 'views' folder
-	// 	fmt.Println("//")
-    //     return c.Render("temp/tests.html", fiber.Map{
-    //         "Title": "Fiber HTML Example",
-    //     })
-    // })
+	app.Get("/", func(c *fiber.Ctx) error {
+        // Render the HTML file from the 'views' folder
+		fmt.Println("//")
+        return c.Render("temp/payment.html", fiber.Map{
+            "Title": "Fiber HTML Example",
+        })
+    })
 
 	app.Get("/swagger/*", swagger.HandlerDefault)
 	app.Static("/temp", "./temp")

@@ -12,4 +12,5 @@ type RepoInter interface {
 	UpdateGig(gig model.Gig) error
 	DeleteImages(id uint) error
 	DeleteGig(id, user_id uint) error
+	CreateOrder(data model.Order)error
 }

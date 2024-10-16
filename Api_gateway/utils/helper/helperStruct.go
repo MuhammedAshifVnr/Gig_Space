@@ -1,5 +1,7 @@
 package helper
 
+import "time"
+
 type SignupData struct {
 	Firstname string `json:"firstname"`
 	Lastname  string `json:"lastname"`
@@ -34,4 +36,11 @@ type Skill struct {
 
 type AddSkillsRequest struct {
 	Skills []Skill `json:"skills"`
+}
+
+type Message struct {
+	SenderID    int32
+	RecipientID int32
+	MessageText string
+	CreatedAt   time.Time
 }

@@ -13,7 +13,8 @@ func InitializeService() *service.GigService {
 	repo := repo.NewGigRepository(db)
 	userClient := client.NewUserClinet()
 	searchClient := client.NewSearchClinet()
-	service := service.NewGigService(repo, s3Svc, userClient, searchClient)
+	paymentClient := client.NewPaymentClinet()
+	service := service.NewGigService(repo, s3Svc, userClient, searchClient, paymentClient)
 
 	return service
 }

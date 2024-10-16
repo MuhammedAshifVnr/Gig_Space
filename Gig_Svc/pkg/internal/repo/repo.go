@@ -71,3 +71,8 @@ func (r *GigRepo) DeleteGig(id, user_id uint) error {
 		return nil
 	})
 }
+
+func (r GigRepo)CreateOrder(data model.Order)error{
+	err:=r.DB.Create(&data).Error
+	return err
+}

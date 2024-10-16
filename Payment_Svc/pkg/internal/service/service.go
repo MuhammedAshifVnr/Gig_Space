@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
@@ -183,6 +184,7 @@ import (
 func (s *PaymentService) GetSubDetails(ctx context.Context, req *proto.GetSubReq) (*proto.GetSubRes, error) {
 	endDate, err := s.Repo.GetSubDetails(uint(req.UserId))
 	if err != nil {
+		log.Println("Failed to Find SubDetails: ", err.Error())
 		return nil, err
 	}
 	fmt.Println("end = ", endDate.Unix(), " now = ", time.Now().Unix())

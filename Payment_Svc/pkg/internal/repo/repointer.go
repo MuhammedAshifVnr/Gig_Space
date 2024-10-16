@@ -21,4 +21,8 @@ type RepoInter interface {
 	UpdatePayment(payment model.Payment) error
     UpdateSubscription(subscription model.Subscription) error
     GetSubscriptionByID(subscriptionID string) (*model.Subscription, error)
+	CreateOrderPayment(data model.OrderPayment)error
+	CreateWallet(data model.Wallet) error
+	GetWallet(ID uint) (model.Wallet, error)
+	AddFundAccID(FundID string, userID uint) error
 }

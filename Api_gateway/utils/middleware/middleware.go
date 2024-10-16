@@ -2,8 +2,9 @@ package middleware
 
 import (
 	"fmt"
+	"log"
 	"net/http"
-	"time"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
@@ -41,13 +42,40 @@ func Auth(role string) fiber.Handler {
 			c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "claims not ok"})
 		}
 		fmt.Println("ec", claims.SubscriptionExpiry)
-		if role == "UserToken" && time.Now().Unix() > claims.SubscriptionExpiry {
-			return c.Status(fiber.StatusPaymentRequired).JSON(fiber.Map{
-				"message": "Your subscription is expired or inactive. Please renew to access this service.",
-			})
-		}
+		// if role == "UserToken" && time.Now().Unix() > claims.SubscriptionExpiry {
+		// 	return c.Status(fiber.StatusPaymentRequired).JSON(fiber.Map{
+		// 		"message": "Your subscription is expired or inactive. Please renew to access this service.",
+		// 	})
+		// }
 		c.Locals("userID", claims.UserID)
 		c.Locals("userEmail", claims.UserEmail)
+
+		return c.Next()
+	}
+}
+
+func AuthChat() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		tokenString := strings.TrimPrefix(c.Get("UserToken"), "Bearer ")
+		fmt.Println("==")
+		token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
+			return []byte(viper.GetString("TokenSecret")), nil
+		})
+
+		if err != nil || !token.Valid {
+			log.Println("MW: User not Authorized")
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"message": "Invalid token",
+			})
+		}
+		Claims, ok := token.Claims.(*Claims)
+		if !ok {
+			c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "claims not ok"})
+		}
+
+		c.Locals("userID", Claims.UserID)
+		c.Locals("User_role", Claims.Role)
+		fmt.Println("userID", Claims.UserID)
 
 		return c.Next()
 	}

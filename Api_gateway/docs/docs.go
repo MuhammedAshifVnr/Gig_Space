@@ -295,6 +295,31 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/chat/messages/{receiverID}": {
+            "get": {
+                "description": "Retrieve the chat history between the current authenticated user and a specified recipient.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Chat"
+                ],
+                "summary": "Get Chat Messages",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Recipient User ID",
+                        "name": "receiverID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/gig/add": {
             "post": {
                 "description": "This endpoint creates a new gig with a title, description, price, and images. Images are uploaded via multipart form.",
@@ -360,6 +385,31 @@ const docTemplate = `{
                         "description": "Images for the gig (can upload multiple images)",
                         "name": "images",
                         "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/gig/order/{GigID}": {
+            "post": {
+                "description": "Creates a new order for a specified gig using the gig ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Create an order",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Gig ID",
+                        "name": "GigID",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -471,6 +521,52 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/payments/bank": {
+            "post": {
+                "description": "Adds a bank account for the user, ensuring account numbers match and valid IFSC is provided",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment"
+                ],
+                "summary": "Add Bank Account",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Account Number",
+                        "name": "Account1",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Confirm Account Number",
+                        "name": "Account2",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "IFSC Code",
+                        "name": "IFSC",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Beneficiary Name",
+                        "name": "Name",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/payments/subscription-renew/{PlanID}": {
             "post": {
                 "description": "This endpoint renews the subscription for a given user and plan.",
@@ -526,6 +622,95 @@ const docTemplate = `{
                         }
                     }
                 }
+            }
+        },
+        "/payments/wallet": {
+            "post": {
+                "description": "Retrieve the wallet balance by providing the correct PIN for security",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Get Wallet Information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User's wallet PIN",
+                        "name": "Pin",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/payments/wallet/create": {
+            "post": {
+                "description": "This endpoint allows users to create a wallet with a secure PIN.",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Create a new wallet for the user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "4-digit secure PIN",
+                        "name": "Pin",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Repeat PIN to confirm",
+                        "name": "RePin",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/payments/withdrawal": {
+            "post": {
+                "description": "This endpoint allows the user to withdraw a specific amount from their wallet by providing a valid PIN.",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment"
+                ],
+                "summary": "Withdraw amount from user's wallet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "PIN for wallet withdrawal",
+                        "name": "Pin",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "Amount to withdraw",
+                        "name": "Amount",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
             }
         },
         "/search/gigs": {

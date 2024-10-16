@@ -23,5 +23,7 @@ func autoMigrate(db *gorm.DB) {
 		&model.Subscription{},
 		&model.Payment{},
 		&model.Plan{},
+		&model.OrderPayment{},
+		&model.Wallet{},
 	)
 }

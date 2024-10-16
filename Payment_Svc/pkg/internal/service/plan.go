@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/MuhammedAshifVnr/Gig_Space/Payment_Svc/pkg/model"
 	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
@@ -22,6 +23,7 @@ func (s *PaymentService) CreatePlan(ctx context.Context, req *proto.CreatePlanRe
 
 	plan, err := s.RazorClient.Plan.Create(planData, nil)
 	if err != nil {
+		log.Println("Failed to create plan via Razorpay SDK: ",err.Error())
 		return nil, fmt.Errorf("failed to create plan via Razorpay SDK: %w", err)
 	}
 
@@ -33,6 +35,7 @@ func (s *PaymentService) CreatePlan(ctx context.Context, req *proto.CreatePlanRe
 		Interval:       int(req.Interval),
 	})
 	if err != nil {
+		log.Println("Failed to create Plan: ",err.Error())
 		return nil, err
 	}
 
@@ -46,6 +49,7 @@ func (s *PaymentService) CreatePlan(ctx context.Context, req *proto.CreatePlanRe
 func (s *PaymentService) GetPlan(ctx context.Context, req *proto.EmptyReq) (*proto.GetPlanRes, error) {
 	plans, err := s.Repo.GetAllPlans()
 	if err != nil {
+		log.Println("Failed to find plan: ", err.Error())
 		return nil, err
 	}
 	return &proto.GetPlanRes{
@@ -56,6 +60,7 @@ func (s *PaymentService) GetPlan(ctx context.Context, req *proto.EmptyReq) (*pro
 func (s *PaymentService) DeletePlan(ctx context.Context, req *proto.DeletePlanReq) (*proto.PaymentCommonRes, error) {
 	err := s.Repo.DeletePlan(req.PlanId)
 	if err != nil {
+		log.Println("Failed to delete plan: ",err.Error())
 		return nil, err
 	}
 	return &proto.PaymentCommonRes{

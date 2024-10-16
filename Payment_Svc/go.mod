@@ -3,9 +3,10 @@ module github.com/MuhammedAshifVnr/Gig_Space/Payment_Svc
 go 1.23.1
 
 require (
-	github.com/MuhammedAshifVnr/Gig_Space_Proto v1.1.13
+	github.com/MuhammedAshifVnr/Gig_Space_Proto v1.1.27
 	github.com/razorpay/razorpay-go v1.3.2
 	github.com/spf13/viper v1.19.0
+	golang.org/x/crypto v0.24.0
 	google.golang.org/grpc v1.66.0
 	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.25.12
@@ -32,7 +33,6 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
-	golang.org/x/crypto v0.24.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/net v0.26.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect

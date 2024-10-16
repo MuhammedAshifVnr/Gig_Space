@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/MuhammedAshifVnr/Gig_Space/User_svc/pkg/model"
 	"github.com/MuhammedAshifVnr/Gig_Space/User_svc/utils/upload"
@@ -18,6 +19,7 @@ func (s *UserService) UpdateBio(ctc context.Context, req *proto.UpdateProfileReq
 			Title:  req.Title,
 		})
 		if err != nil {
+			log.Println("Failed to Create Bio: ",err.Error())
 			return &proto.CommonRes{}, err
 		}
 	} else {
@@ -27,6 +29,7 @@ func (s *UserService) UpdateBio(ctc context.Context, req *proto.UpdateProfileReq
 			Title:  req.Title,
 		})
 		if err != nil {
+			log.Println("Failed to Update Bio: ",err.Error())
 			return &proto.CommonRes{}, err
 		}
 	}
@@ -40,6 +43,7 @@ func (s *UserService) FreelacerAddSkill(ctx context.Context, req *proto.FreeAddS
 
 	val, err := s.reops.GetSkill(req.SkillName)
 	if err != nil {
+		log.Println("Failed to Find Skill: ",err.Error())
 		return &proto.CommonRes{}, err
 	}
 	if val.ID == 0 {
@@ -50,6 +54,7 @@ func (s *UserService) FreelacerAddSkill(ctx context.Context, req *proto.FreeAddS
 	}
 	err = s.reops.FreelacerAddSkill(uint(req.UserId), val.ID, int(req.ProficiencyLevel))
 	if err != nil {
+		log.Println("Failed to Save Skill: ",err.Error())
 		return &proto.CommonRes{}, err
 	}
 
@@ -62,10 +67,12 @@ func (s *UserService) FreelacerAddSkill(ctx context.Context, req *proto.FreeAddS
 func (s *UserService) GetUserProfile(ctx context.Context, req *proto.ProfileReq) (*proto.ProfileRes, error) {
 	user, err := s.reops.GetProfile(uint(req.UserId))
 	if err != nil {
+		log.Println("Failed to Find User Profil: ",err.Error())
 		return &proto.ProfileRes{}, err
 	}
 	skills, err := s.reops.GetSkillByuserID(uint(req.UserId))
 	if err != nil {
+		log.Println("Failed to Find User Skills: ",err.Error())
 		return &proto.ProfileRes{}, err
 	}
 	add := s.reops.GetAddress(uint(req.UserId))
@@ -91,6 +98,7 @@ func (s *UserService) GetUserProfile(ctx context.Context, req *proto.ProfileReq)
 func (s *UserService) DeleteSkill(ctx context.Context, req *proto.DeleteSkillRes) (*proto.CommonRes, error) {
 	err := s.reops.DeleteSkillByID(uint(req.UserId), uint(req.SkillId))
 	if err != nil {
+		log.Println("Failed to Delete Skill: ",err.Error())
 		return &proto.CommonRes{}, err
 	}
 	return &proto.CommonRes{
@@ -102,20 +110,24 @@ func (s *UserService) DeleteSkill(ctx context.Context, req *proto.DeleteSkillRes
 func (s *UserService) UploadProfilePhoto(ctx context.Context, req *proto.UpProilePicReq) (*proto.CommonRes, error) {
 	url, err := upload.UploadPhoto(s.s3, req.Pic, uint(req.UserId))
 	if err != nil {
+		log.Println("Failed to Upload Photo into S3: ",err.Error())
 		return &proto.CommonRes{}, err
 	}
 	profile, err := s.reops.GetPhoto(uint(req.UserId))
 	if err != nil {
+		log.Println("Failed to Find Existing Photo: ",err.Error())
 		return &proto.CommonRes{}, err
 	}
 	if profile.ID == 0 {
 		err := s.reops.CreatPhoto(url, uint(req.UserId))
 		if err != nil {
+			log.Println("Failed to Save Photo Url: ",err.Error())
 			return &proto.CommonRes{}, err
 		}
 	} else {
 		err := s.reops.UpdatePhoto(url, uint(req.UserId))
 		if err != nil {
+			log.Println("Faild to Update Photo Url",err.Error())
 			return &proto.CommonRes{}, err
 		}
 	}
@@ -130,6 +142,7 @@ func (s *UserService) UpdateAddress(ctx context.Context, req *proto.AddressReq) 
 	if add.ID == 0 {
 		err := s.reops.CreateAddress(req.State, req.District, req.City, int(req.Id))
 		if err != nil {
+			log.Println("Failed to Create Address: ",err.Error())
 			return nil, err
 		}
 	} else {
@@ -144,6 +157,7 @@ func (s *UserService) UpdateAddress(ctx context.Context, req *proto.AddressReq) 
 		}
 		err := s.reops.UpdateAddress(add)
 		if err != nil {
+			log.Println("Failed ti Update Address: ",err.Error())
 			return nil, err
 		}
 	}
@@ -156,6 +170,7 @@ func (s *UserService) UpdateAddress(ctx context.Context, req *proto.AddressReq) 
 func (s *UserService) UpdatRole(ctx context.Context, req *proto.RoleReq) (*proto.CommonRes, error) {
 	user, err := s.reops.GetUserByID(uint(req.Id))
 	if err != nil {
+		log.Println("Failed to Find User: ",err.Error())
 		return nil, err
 	}
 	var role string

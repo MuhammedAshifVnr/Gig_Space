@@ -17,12 +17,14 @@ import (
 type PaymentService struct {
 	Repo        repo.RepoInter
 	RazorClient *razorpay.Client
+	UserClient  proto.UserServiceClient
 	proto.UnimplementedPaymentServiceServer
 }
 
-func NewPaymentService(repo repo.RepoInter) *PaymentService {
+func NewPaymentService(repo repo.RepoInter,UserConn proto.UserServiceClient) *PaymentService {
 	client := razorpay.NewClient(viper.GetString("ApiKey"), viper.GetString("ApiSecret"))
 	return &PaymentService{
+		UserClient: UserConn,
 		Repo:        repo,
 		RazorClient: client,
 	}
@@ -31,6 +33,7 @@ func NewPaymentService(repo repo.RepoInter) *PaymentService {
 func (s *PaymentService) CreateSubscription(ctx context.Context, req *proto.CreateSubscriptionRequest) (*proto.CreateSubscriptionResponse, error) {
 	userSub, err := s.Repo.GetActiveSubscription(uint(req.UserId))
 	if err != nil {
+		log.Println("Failed to find sub: ", err.Error())
 		return nil, err
 	}
 	if userSub.ID != 0 && userSub.Active == "Active" {
@@ -39,6 +42,7 @@ func (s *PaymentService) CreateSubscription(ctx context.Context, req *proto.Crea
 
 	plan, err := s.Repo.GetPlanByID(uint(req.PlanId))
 	if err != nil {
+		log.Println("Filed to find the plan: ", err.Error())
 		return nil, err
 	}
 
@@ -77,6 +81,7 @@ func (s *PaymentService) CreateSubscription(ctx context.Context, req *proto.Crea
 		Status:         "pending",
 	})
 	if err != nil {
+		log.Println("Failed to Save Paymetn Data: ", err.Error())
 		return nil, err
 	}
 

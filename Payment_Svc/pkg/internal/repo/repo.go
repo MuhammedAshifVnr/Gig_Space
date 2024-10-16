@@ -60,7 +60,7 @@ func (r *PaymentRepo) CreatePayment(payment model.Payment) error {
 }
 
 func (r *PaymentRepo) UpdateStatus(orderID, transaction_id, status string) error {
-	query := `UPDATE payments SET status = ?, transaction_id =? WHERE subscription_id = ?`
+	query := `UPDATE order_payments  SET status = ?, transaction_id =? WHERE order_id = ?`
 	err := r.DB.Exec(query, status, transaction_id, orderID).Error
 	if err != nil {
 		fmt.Println("--")

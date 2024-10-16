@@ -14,9 +14,11 @@ func InitializeRoutes(app *fiber.App) {
 	gig := handler.NewGigHandler(client.NewGigClient())
 	search := handler.NewSearchHandler(client.NewSearchClient())
 	payment:=handler.NewPaymentHnadller(client.NewPaymentClient())
+	chat:=handler.NewChatHandler(client.NewChatClient())
 	router.SearchRouter(app.Group("/search"), search)
 	router.UserProfile(app.Group("/user"), user)
 	router.AdminRouters(app.Group("/admin"), admin,payment)
 	router.GigRouters(app.Group("/gig"), gig)
 	router.PaymentRouters(app.Group("/payments"),payment)
+	router.ChatRouter(app.Group("/chat"),chat)
 }

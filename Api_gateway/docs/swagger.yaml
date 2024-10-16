@@ -238,6 +238,24 @@ paths:
       summary: Get all users
       tags:
       - Admin
+  /chat/messages/{receiverID}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the chat history between the current authenticated user
+        and a specified recipient.
+      parameters:
+      - description: Recipient User ID
+        in: path
+        name: receiverID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Get Chat Messages
+      tags:
+      - Chat
   /gig/{GigID}:
     delete:
       description: Deletes a gig by its ID, ensuring the user is authorized to delete
@@ -351,6 +369,23 @@ paths:
       summary: Create a new gig
       tags:
       - Gigs
+  /gig/order/{GigID}:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new order for a specified gig using the gig ID.
+      parameters:
+      - description: Gig ID
+        in: path
+        name: GigID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Create an order
+      tags:
+      - Orders
   /gig/user:
     get:
       consumes:
@@ -362,6 +397,39 @@ paths:
       summary: Get Gigs by User ID
       tags:
       - Gigs
+  /payments/bank:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Adds a bank account for the user, ensuring account numbers match
+        and valid IFSC is provided
+      parameters:
+      - description: Account Number
+        in: formData
+        name: Account1
+        required: true
+        type: integer
+      - description: Confirm Account Number
+        in: formData
+        name: Account2
+        required: true
+        type: integer
+      - description: IFSC Code
+        in: formData
+        name: IFSC
+        required: true
+        type: string
+      - description: Beneficiary Name
+        in: formData
+        name: Name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Add Bank Account
+      tags:
+      - Payment
   /payments/subscription-renew/{PlanID}:
     post:
       consumes:
@@ -401,6 +469,68 @@ paths:
       summary: Create Subscription Payment
       tags:
       - Payments
+  /payments/wallet:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Retrieve the wallet balance by providing the correct PIN for security
+      parameters:
+      - description: User's wallet PIN
+        in: formData
+        name: Pin
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Get Wallet Information
+      tags:
+      - Wallet
+  /payments/wallet/create:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: This endpoint allows users to create a wallet with a secure PIN.
+      parameters:
+      - description: 4-digit secure PIN
+        in: formData
+        name: Pin
+        required: true
+        type: integer
+      - description: Repeat PIN to confirm
+        in: formData
+        name: RePin
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Create a new wallet for the user
+      tags:
+      - Wallet
+  /payments/withdrawal:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: This endpoint allows the user to withdraw a specific amount from
+        their wallet by providing a valid PIN.
+      parameters:
+      - description: PIN for wallet withdrawal
+        in: formData
+        name: Pin
+        required: true
+        type: string
+      - description: Amount to withdraw
+        in: formData
+        name: Amount
+        required: true
+        type: number
+      produces:
+      - application/json
+      responses: {}
+      summary: Withdraw amount from user's wallet
+      tags:
+      - Payment
   /search/gigs:
     get:
       consumes:

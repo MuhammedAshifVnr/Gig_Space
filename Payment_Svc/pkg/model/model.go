@@ -8,12 +8,12 @@ import (
 
 type Plan struct {
 	gorm.Model
-	Name     string
-	Price    int
-	RazorpayPlanID string 
-	Period         string 
+	Name           string
+	Price          int
+	RazorpayPlanID string
+	Period         string
 	Interval       int
-	Description    string  
+	Description    string
 }
 
 type Subscription struct {
@@ -34,4 +34,22 @@ type Payment struct {
 	Amount         int
 	Status         string
 	TransactionID  string
+}
+
+type OrderPayment struct {
+	gorm.Model
+	OrderID       string
+	TransactionID string
+	Status        string
+	UserID        uint
+	Amount        int
+}
+
+type Wallet struct {
+	gorm.Model
+	UserID              uint `gorm:"unique"`
+	Balance             int64
+	Pin_hash            string
+	Fund_account_id     string
+	Last_transaction_at time.Time
 }

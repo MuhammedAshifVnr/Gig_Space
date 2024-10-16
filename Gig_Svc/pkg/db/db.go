@@ -32,5 +32,6 @@ func autoMigrate(db *gorm.DB) {
 	db.AutoMigrate(
 		&model.Gig{},
 		&model.Image{},
+		&model.Order{},
 	)
 }

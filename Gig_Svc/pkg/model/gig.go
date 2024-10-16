@@ -21,3 +21,14 @@ type Image struct {
 	GigID uint
 	Url   string
 }
+
+type Order struct {
+	gorm.Model
+	OrderID      string
+	GigID        uint
+	ClinetID     uint
+	FreelancerID uint
+	PaymentID    string
+	Amount       int
+}
+

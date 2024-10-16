@@ -1,35 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Razorpay Checkout</title>
-   
+    <title>Go chat 🚀</title>
 </head>
+
 <body>
-    <button id="pay-button">Pay Now</button>
-
-    <div id="paypal-button-container-P-8DF458522D010510LM33PDIY"></div>
-    <script src="https://www.paypal.com/sdk/js?client-id=AWBGc3MjDt4O8nLhpE_dMENgEgK89y0bFvF_aiNgl_KygGyidkEnPj91rYyv6KsxymdTfBAL3U1NCk0y&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
-    <script>
-      paypal.Buttons({
-          style: {
-              shape: 'rect',
-              color: 'gold',
-              layout: 'vertical',
-              label: 'subscribe'
-          },
-          createSubscription: function(data, actions) {
-            return actions.subscription.create({
-              /* Creates the subscription */
-              plan_id: 'P-8DF458522D010510LM33PDIY'
-            });
-          },
-          onApprove: function(data, actions) {
-            alert(data.subscriptionID); // You can add optional success message for the subscriber here
-          }
-      }).render('#paypal-button-container-P-8DF458522D010510LM33PDIY'); // Renders the PayPal button
-    </script>
-
+    <div style="display: flex;flex-direction: column;">
+        <div id="inputs">
+            <form onsubmit="handleSubmit(event)" method="post">
+                <input id="username" type="text" name="username" placeholder="username" required>
+                <input id="message" type="text" name="message" placeholder="what's on your mind ?" required>
+                <input type="submit" value="Send">
+            </form>
+        </div>
+        <div id="messages" style="display: flex;flex-direction: column;"></div>
+    </div>
 </body>
+
+<script>
+
+    const websocket = new WebSocket("ws://localhost:8080/ws");
+
+    function handleSubmit(e) {
+        e.preventDefault();
+        websocket.send(JSON.stringify({
+            "from": e.target.username.value,
+            "message": e.target.message.value
+        }))
+    }
+
+    websocket.onmessage = function (event) {
+        const message = JSON.parse(event.data)
+        messages.innerHTML += `<p><b>${message.from}</b> says ${message.message}</p>`
+    }
+</script>
+
 </html>
