@@ -66,10 +66,10 @@ func (r *PaymentRepo) UpdateStatus(orderID, transaction_id, status string) error
 		fmt.Println("--")
 		return err
 	}
-	startDate := time.Now()
-	query = `UPDATE subscriptions SET active = ? ,start_date =?,end_date = ? WHERE subscription_id = ?`
-	err = r.DB.Exec(query, "Active", startDate, startDate, startDate.AddDate(0, 0, 30), 1).Error
-	return err
+	// startDate := time.Now()
+	// query = `UPDATE subscriptions SET active = ? ,start_date =?,end_date = ? WHERE subscription_id = ?`
+	// err = r.DB.Exec(query, "Active", startDate, startDate, startDate.AddDate(0, 0, 30), 1).Error
+	 return err
 }
 
 // func (r *PaymentRepo) UpdateSubscription(sub model.Subscription) error {

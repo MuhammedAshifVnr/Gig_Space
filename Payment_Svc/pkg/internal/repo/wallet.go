@@ -30,3 +30,12 @@ func (r *PaymentRepo) AddFundAccID(FundID string, userID uint) error {
 	err := r.DB.Exec(query, FundID, userID)
 	return err.Error
 }
+
+func (r *PaymentRepo)UpdateWallet(wallet model.Wallet)error{
+	err:=r.DB.Exec(`
+	UPDATE wallets
+	SET balance = ?, updated_at = CURRENT_TIMESTAMP
+	WHERE id = ?`,
+	wallet.Balance, wallet.ID)
+	return err.Error
+}

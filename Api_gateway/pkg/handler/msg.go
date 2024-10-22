@@ -51,7 +51,7 @@ func (h *MessagingHandler) OpenChat(c *websocket.Conn) {
 			c.WriteJSON(fiber.Map{
 				"error": err.Error(),
 			})
-			continue
+			break
 		}
 		h.DispatchMessage(ActiveConnections, incomingMsg, userID)
 	}

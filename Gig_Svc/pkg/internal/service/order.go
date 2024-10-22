@@ -43,3 +43,13 @@ func (s *GigService) CreateOrder(ctx context.Context, req *proto.CreateOrderReq)
 		Message: "Payment ID: " + PaymentRes.Message,
 	}, nil
 }
+
+func (s *GigService)GetClientOrders(ctx context.Context,req *proto.GetOrderReq)(*proto.GetOrderRes,error){
+	result,err:=s.repos.GetOrders(uint(req.UserId))
+	if err != nil{
+		return nil, err
+	}
+	return &proto.GetOrderRes{
+		Gigs: result,
+	},nil
+}

@@ -25,4 +25,5 @@ type RepoInter interface {
 	CreateWallet(data model.Wallet) error
 	GetWallet(ID uint) (model.Wallet, error)
 	AddFundAccID(FundID string, userID uint) error
+	UpdateWallet(wallet model.Wallet)error
 }

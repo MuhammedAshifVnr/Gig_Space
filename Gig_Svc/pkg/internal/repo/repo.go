@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/pkg/model"
-
+"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
 	"gorm.io/gorm"
 )
 
@@ -72,7 +72,28 @@ func (r *GigRepo) DeleteGig(id, user_id uint) error {
 	})
 }
 
-func (r GigRepo)CreateOrder(data model.Order)error{
+func (r *GigRepo)CreateOrder(data model.Order)error{
 	err:=r.DB.Create(&data).Error
 	return err
+}
+
+func (r *GigRepo)GetOrders(clientID uint)([]*proto.Order,error){
+	query:=`SELECT * FROM ORDERS WHERE client_id = ?`
+	var orders []*proto.Order
+	var res []model.Order
+	err:=r.DB.Raw(query,clientID).Scan(&res)
+	if err!=nil{
+		return nil, err.Error
+	}
+	for _,val:=range res{
+		order:=&proto.Order{
+			OrderId: val.OrderID,
+			GigId: uint32(val.GigID),
+			FreelancerId: uint32(val.FreelancerID),
+			PaymentId: val.PaymentID,
+			Amount: int64(val.Amount),
+		}
+		orders=append(orders, order)
+	}
+	return orders,nil
 }

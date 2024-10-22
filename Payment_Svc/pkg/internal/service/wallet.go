@@ -115,6 +115,12 @@ func (s *PaymentService) Withdrawal(ctx context.Context, req *proto.WithdrawalRe
 		log.Println("Faild to payout: ", err.Error())
 		return nil, err
 	}
+	wallet.Balance-=int64(req.Amount)
+	err=s.Repo.UpdateWallet(wallet)
+	if err != nil {
+		log.Println("Faild to update wallet: ", err.Error())
+		return nil, err
+	}
 	return &proto.PaymentCommonRes{
 		Message: res,
 		Status:  200,
