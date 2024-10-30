@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/MuhammedAshifVnr/Gig_Space/Payment_Svc/pkg/model"
@@ -20,9 +21,10 @@ func (s *PaymentService) CreatePaymentOrder(ctx context.Context, req *proto.Crea
 		return nil, err
 	}
 	payment := model.OrderPayment{
-		OrderID: paymentOrder["id"].(string),
-		Status:  "Pending",
-		Amount:  int(req.Amount),
+		ReceiptID: req.OrderId,
+		OrderID:   paymentOrder["id"].(string),
+		Status:    "Pending",
+		Amount:    int(req.Amount),
 	}
 	err = s.Repo.CreateOrderPayment(payment)
 	if err != nil {
@@ -37,14 +39,25 @@ func (s *PaymentService) CreatePaymentOrder(ctx context.Context, req *proto.Crea
 func (s *PaymentService) UpdatePaymentStatus(ctx context.Context, req *proto.UpdatePaymentReq) (*proto.PaymentCommonRes, error) {
 	err := payment.RazorPaymentVerification(req.Signature, req.OrderId, req.PaymentId)
 	if err != nil {
-		log.Println("Faild to update paymetn stauts: ", err)
-		return nil, err
+		log.Println("Failed to verify payment signature:", err)
+		return nil, fmt.Errorf("payment verification failed: %w", err)
 	}
-	err = s.Repo.UpdateStatus(req.OrderId, req.PaymentId, "success")
+
+	receiptID, err := s.Repo.UpdateStatus(req.OrderId, req.PaymentId, "success")
 	if err != nil {
-		log.Println("Faild to update paymetn stauts: ", err)
-		return nil, err
+		log.Println("Failed to update payment status:", err)
+		return nil, fmt.Errorf("failed to update payment status: %w", err)
 	}
+
+	_, err = s.GigClient.UpdateOrderStatus(ctx, &proto.OrderStatusReq{
+		OrderId: receiptID,
+		Status:  "Freelance Approval Pending",
+	})
+	if err != nil {
+		log.Println("Failed to update order status in Gig Service:", err)
+		return nil, fmt.Errorf("failed to update order status in gig service: %w", err)
+	}
+
 	return &proto.PaymentCommonRes{
 		Message: "Payment Update Successfully",
 		Status:  200,

@@ -12,7 +12,7 @@ type RepoInter interface {
 	GetPlanByID(id uint) (model.Plan, error)
 	CreateSubscription(sub model.Subscription) error
 	CreatePayment(payment model.Payment) error
-	UpdateStatus(orderID, transaction_id, status string) error
+	UpdateStatus(orderID, transactionID, status string) (string, error)
 	//UpdateSubscription(sub model.Subscription) error
 	GetSubDetails(userID uint) (time.Time, error)
 	CreatePlan(planData model.Plan) error
@@ -26,4 +26,5 @@ type RepoInter interface {
 	GetWallet(ID uint) (model.Wallet, error)
 	AddFundAccID(FundID string, userID uint) error
 	UpdateWallet(wallet model.Wallet)error
+	AddRefundAmount(user_id uint, amount int) error
 }

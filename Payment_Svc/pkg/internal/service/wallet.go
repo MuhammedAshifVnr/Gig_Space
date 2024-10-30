@@ -98,16 +98,16 @@ func (s *PaymentService) Withdrawal(ctx context.Context, req *proto.WithdrawalRe
 	}
 
 	data := map[string]interface{}{
-		"account_number":       "2323230063217806",
+		"account_number":       "2323230063217806", //env
 		"fund_account_id":      wallet.Fund_account_id,
-		"amount":               req.Amount*100,
+		"amount":               req.Amount * 100,
 		"currency":             "INR",
 		"mode":                 "IMPS",
 		"purpose":              "payout",
 		"queue_if_low_balance": true,
 		"reference_id":         "Payout123", //.........
 		"notes": map[string]interface{}{
-			"custom_note": "This is a custom note",//..............
+			"custom_note": "This is a custom note", //..............
 		},
 	}
 	res, err := helper.Payout(data)
@@ -115,8 +115,8 @@ func (s *PaymentService) Withdrawal(ctx context.Context, req *proto.WithdrawalRe
 		log.Println("Faild to payout: ", err.Error())
 		return nil, err
 	}
-	wallet.Balance-=int64(req.Amount)
-	err=s.Repo.UpdateWallet(wallet)
+	wallet.Balance -= int64(req.Amount)
+	err = s.Repo.UpdateWallet(wallet)
 	if err != nil {
 		log.Println("Faild to update wallet: ", err.Error())
 		return nil, err
@@ -125,4 +125,13 @@ func (s *PaymentService) Withdrawal(ctx context.Context, req *proto.WithdrawalRe
 		Message: res,
 		Status:  200,
 	}, nil
+}
+
+func (s *PaymentService) AddWalletRefund(ctx context.Context, req *proto.AddRefund) (*proto.PaymentCommonRes, error) {
+	err := s.Repo.AddRefundAmount(uint(req.UserId), int(req.Amount))
+	if err != nil {
+		log.Println("Failed to update balance:", err)
+		return nil, err
+	}
+	return nil, nil
 }

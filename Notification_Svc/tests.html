@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCM Token Generation</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging.js"></script>
+</head>
+<body>
+    <h1>FCM Token Generation</h1>
+    <label for="userId">User ID:</label>
+    <input type="text" id="userId" required>
+    <button id="generateTokenBtn">Generate and Send Token</button>
+    <div id="message"></div>
+
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+  apiKey: "AIzaSyAUdQ288G69b5peXjoeVQNZ7hZir1K8Y7o",
+  authDomain: "gig-space-3f734.firebaseapp.com",
+  projectId: "gig-space-3f734",
+  storageBucket: "gig-space-3f734.appspot.com",
+  messagingSenderId: "465350448450",
+  appId: "1:465350448450:web:36e4cbec6f09124c4664db",
+  measurementId: "G-N89N65YX4R"
+};
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const messaging = firebase.messaging();
+
+        // Request permission and get FCM token
+        async function requestPermission(userId) {
+            try {
+                const token = await messaging.getToken({ vapidKey: "YOUR_PUBLIC_VAPID_KEY" });
+                document.getElementById("message").innerText = `FCM Token: ${token}`;
+                
+                const response = await fetch("http://localhost:3000/api/fcm/token", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ user_id: userId, token: token }),
+                });
+
+                const result = await response.json();
+                document.getElementById("message").innerText = result.message || "Token stored successfully!";
+            } catch (error) {
+                console.error("Error getting FCM token:", error);
+                document.getElementById("message").innerText = `Error: ${error.message}`;
+            }
+        }
+
+        document.getElementById("generateTokenBtn").addEventListener("click", function() {
+            const userId = document.getElementById("userId").value;
+            if (userId) {
+                requestPermission(userId);
+            } else {
+                alert("Please enter a User ID.");
+            }
+        });
+    </script>
+</body>
+</html>

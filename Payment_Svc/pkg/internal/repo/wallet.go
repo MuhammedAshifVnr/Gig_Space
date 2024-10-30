@@ -31,11 +31,19 @@ func (r *PaymentRepo) AddFundAccID(FundID string, userID uint) error {
 	return err.Error
 }
 
-func (r *PaymentRepo)UpdateWallet(wallet model.Wallet)error{
-	err:=r.DB.Exec(`
+func (r *PaymentRepo) UpdateWallet(wallet model.Wallet) error {
+	err := r.DB.Exec(`
 	UPDATE wallets
 	SET balance = ?, updated_at = CURRENT_TIMESTAMP
 	WHERE id = ?`,
-	wallet.Balance, wallet.ID)
+		wallet.Balance, wallet.ID)
+	return err.Error
+}
+
+func (r *PaymentRepo) AddRefundAmount(user_id uint, amount int) error {
+	err := r.DB.Exec("UPDATE wallets SET balance = balance + ? WHERE user_id = ?", amount, user_id)
+	if err.RowsAffected == 0 {
+		return fmt.Errorf("user didn't have wallet")
+	}
 	return err.Error
 }

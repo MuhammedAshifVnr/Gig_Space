@@ -1,7 +1,6 @@
 package repo
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -59,17 +58,14 @@ func (r *PaymentRepo) CreatePayment(payment model.Payment) error {
 	return nil
 }
 
-func (r *PaymentRepo) UpdateStatus(orderID, transaction_id, status string) error {
-	query := `UPDATE order_payments  SET status = ?, transaction_id =? WHERE order_id = ?`
-	err := r.DB.Exec(query, status, transaction_id, orderID).Error
+func (r *PaymentRepo) UpdateStatus(orderID, transactionID, status string) (string, error) {
+	var receiptID string
+	query := `UPDATE order_payments SET status = ?, transaction_id = ? WHERE order_id = ? RETURNING receipt_id`
+	err := r.DB.Raw(query, status, transactionID, orderID).Scan(&receiptID).Error
 	if err != nil {
-		fmt.Println("--")
-		return err
+		return "", err
 	}
-	// startDate := time.Now()
-	// query = `UPDATE subscriptions SET active = ? ,start_date =?,end_date = ? WHERE subscription_id = ?`
-	// err = r.DB.Exec(query, "Active", startDate, startDate, startDate.AddDate(0, 0, 30), 1).Error
-	 return err
+	return receiptID, nil
 }
 
 // func (r *PaymentRepo) UpdateSubscription(sub model.Subscription) error {

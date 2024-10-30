@@ -383,6 +383,107 @@
                 "responses": {}
             }
         },
+        "/gig/custom": {
+            "post": {
+                "description": "This endpoint allows freelancers to create a custom gig based on a client's request.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Custom Gig"
+                ],
+                "summary": "Create a custom gig",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Gig Request ID",
+                        "name": "gig_request_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Client ID",
+                        "name": "client_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Gig Title",
+                        "name": "title",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Gig Description",
+                        "name": "description",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "Gig Price",
+                        "name": "price",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Delivery Days",
+                        "name": "delivery_days",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/gig/offers": {
+            "get": {
+                "description": "This endpoint fetches all offers sent to the authenticated client.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Custom Gig"
+                ],
+                "summary": "Get all offers for a client",
+                "responses": {}
+            }
+        },
+        "/gig/offers/{GigID}/": {
+            "post": {
+                "description": "Creates an order for a gig offer using the provided GigID and user ID from context.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Create an Offer Order",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Gig ID",
+                        "name": "GigID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/gig/order/{GigID}": {
             "post": {
                 "description": "Creates a new order for a specified gig using the gig ID.",
@@ -405,6 +506,84 @@
                         "required": true
                     }
                 ],
+                "responses": {}
+            }
+        },
+        "/gig/quotes": {
+            "get": {
+                "description": "This endpoint fetches all quotes for the authenticated user, either as a client or as a freelancer.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quotes"
+                ],
+                "summary": "Get all quotes for a user",
+                "responses": {}
+            }
+        },
+        "/gig/quotes/{GigID}": {
+            "post": {
+                "description": "Allows a client to create a quote for a specific gig by providing necessary details like price, message, and delivery days.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quotes"
+                ],
+                "summary": "Create a quote for a Gig",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Gig ID",
+                        "name": "GigID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Description or message for the quote",
+                        "name": "Message",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Price offered by the client",
+                        "name": "Price",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Delivery days requested by the client",
+                        "name": "DeliveryDays",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/gig/requests": {
+            "get": {
+                "description": "Retrieve all requests for orders associated with the user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Request"
+                ],
+                "summary": "Get all order requests",
                 "responses": {}
             }
         },
@@ -508,6 +687,56 @@
                         "description": "Images for the gig (multiple files allowed)",
                         "name": "images",
                         "in": "formData"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/gig/{order_id}/accept": {
+            "post": {
+                "description": "Accepts an order by updating its status to \"Accepted\" in the system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Request"
+                ],
+                "summary": "Accept an order",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Order ID",
+                        "name": "order_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/gig/{order_id}/reject": {
+            "post": {
+                "description": "Reject an order by updating its status to \"Reject\" in the system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Request"
+                ],
+                "summary": "Reject an order",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Order ID",
+                        "name": "order_id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {}

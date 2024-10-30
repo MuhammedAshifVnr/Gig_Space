@@ -318,6 +318,40 @@ paths:
       summary: Update an existing gig
       tags:
       - Gigs
+  /gig/{order_id}/accept:
+    post:
+      consumes:
+      - application/json
+      description: Accepts an order by updating its status to "Accepted" in the system
+      parameters:
+      - description: Order ID
+        in: path
+        name: order_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Accept an order
+      tags:
+      - Request
+  /gig/{order_id}/reject:
+    post:
+      consumes:
+      - application/json
+      description: Reject an order by updating its status to "Reject" in the system
+      parameters:
+      - description: Order ID
+        in: path
+        name: order_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Reject an order
+      tags:
+      - Request
   /gig/add:
     post:
       consumes:
@@ -369,6 +403,78 @@ paths:
       summary: Create a new gig
       tags:
       - Gigs
+  /gig/custom:
+    post:
+      consumes:
+      - multipart/form-data
+      description: This endpoint allows freelancers to create a custom gig based on
+        a client's request.
+      parameters:
+      - description: Gig Request ID
+        in: formData
+        name: gig_request_id
+        required: true
+        type: integer
+      - description: Client ID
+        in: formData
+        name: client_id
+        required: true
+        type: integer
+      - description: Gig Title
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Gig Description
+        in: formData
+        name: description
+        required: true
+        type: string
+      - description: Gig Price
+        in: formData
+        name: price
+        required: true
+        type: number
+      - description: Delivery Days
+        in: formData
+        name: delivery_days
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Create a custom gig
+      tags:
+      - Custom Gig
+  /gig/offers:
+    get:
+      consumes:
+      - application/json
+      description: This endpoint fetches all offers sent to the authenticated client.
+      produces:
+      - application/json
+      responses: {}
+      summary: Get all offers for a client
+      tags:
+      - Custom Gig
+  /gig/offers/{GigID}/:
+    post:
+      consumes:
+      - application/json
+      description: Creates an order for a gig offer using the provided GigID and user
+        ID from context.
+      parameters:
+      - description: Gig ID
+        in: path
+        name: GigID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Create an Offer Order
+      tags:
+      - Orders
   /gig/order/{GigID}:
     post:
       consumes:
@@ -386,6 +492,62 @@ paths:
       summary: Create an order
       tags:
       - Orders
+  /gig/quotes:
+    get:
+      consumes:
+      - application/json
+      description: This endpoint fetches all quotes for the authenticated user, either
+        as a client or as a freelancer.
+      produces:
+      - application/json
+      responses: {}
+      summary: Get all quotes for a user
+      tags:
+      - Quotes
+  /gig/quotes/{GigID}:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Allows a client to create a quote for a specific gig by providing
+        necessary details like price, message, and delivery days.
+      parameters:
+      - description: Gig ID
+        in: path
+        name: GigID
+        required: true
+        type: integer
+      - description: Description or message for the quote
+        in: formData
+        name: Message
+        required: true
+        type: string
+      - description: Price offered by the client
+        in: formData
+        name: Price
+        required: true
+        type: integer
+      - description: Delivery days requested by the client
+        in: formData
+        name: DeliveryDays
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Create a quote for a Gig
+      tags:
+      - Quotes
+  /gig/requests:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all requests for orders associated with the user
+      produces:
+      - application/json
+      responses: {}
+      summary: Get all order requests
+      tags:
+      - Request
   /gig/user:
     get:
       consumes:

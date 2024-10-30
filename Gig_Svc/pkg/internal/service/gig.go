@@ -213,3 +213,4 @@ func (s *GigService) DeleteGigByID(ctx context.Context, req *proto.DeleteReq) (*
 		Status:  200,
 	}, nil
 }
+

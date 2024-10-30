@@ -18,14 +18,16 @@ type PaymentService struct {
 	Repo        repo.RepoInter
 	RazorClient *razorpay.Client
 	UserClient  proto.UserServiceClient
+	GigClient   proto.GigServiceClient
 	proto.UnimplementedPaymentServiceServer
 }
 
-func NewPaymentService(repo repo.RepoInter,UserConn proto.UserServiceClient) *PaymentService {
+func NewPaymentService(repo repo.RepoInter, UserConn proto.UserServiceClient,GigConn proto.GigServiceClient) *PaymentService {
 	client := razorpay.NewClient(viper.GetString("ApiKey"), viper.GetString("ApiSecret"))
 	return &PaymentService{
-		UserClient: UserConn,
+		UserClient:  UserConn,
 		Repo:        repo,
+		GigClient: GigConn,
 		RazorClient: client,
 	}
 }

@@ -28,7 +28,36 @@ type Order struct {
 	GigID        uint
 	ClinetID     uint
 	FreelancerID uint
-	PaymentID    string
+	Status       string
 	Amount       int
 }
 
+type Quote struct {
+	gorm.Model
+	GigId        uint64
+	Gig          Gig
+	ClientId     uint64
+	Describe     string
+	Price        float64
+	DeliveryDays int
+}
+
+type CustomGig struct {
+	gorm.Model
+	GigRequestID uint
+	FreelancerID uint
+	ClientID     uint
+	Title        string
+	Description  string
+	Price        float64
+	DeliveryDays int
+}
+type CustomOrder struct {
+	gorm.Model
+	OrderID      string
+	CustomGigID  uint
+	ClinetID     uint
+	FreelancerID uint
+	Status       string
+	Amount       int
+}

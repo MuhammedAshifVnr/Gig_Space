@@ -12,6 +12,7 @@ func InitializeService() *service.PaymentService {
 	db := db.InitializeDB(viper.GetString("DBUrl"))
 	repo := repo.NewPaymentRepository(db)
 	user:=client.NewUserClinet()
-	service := service.NewPaymentService(repo,user)
+	gig:=client.NewGigClinet()
+	service := service.NewPaymentService(repo,user,gig)
 	return service
 }

@@ -38,6 +38,7 @@ type Payment struct {
 
 type OrderPayment struct {
 	gorm.Model
+	ReceiptID     string
 	OrderID       string
 	TransactionID string
 	Status        string

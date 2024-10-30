@@ -33,5 +33,8 @@ func autoMigrate(db *gorm.DB) {
 		&model.Gig{},
 		&model.Image{},
 		&model.Order{},
+		&model.Quote{},
+		&model.CustomGig{},
+		&model.CustomOrder{},
 	)
 }
