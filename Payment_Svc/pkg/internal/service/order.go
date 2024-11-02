@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/MuhammedAshifVnr/Gig_Space/Payment_Svc/pkg/logger"
 	"github.com/MuhammedAshifVnr/Gig_Space/Payment_Svc/pkg/model"
 	"github.com/MuhammedAshifVnr/Gig_Space/Payment_Svc/utils/payment"
 	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
+	"github.com/sirupsen/logrus"
 )
 
 func (s *PaymentService) CreatePaymentOrder(ctx context.Context, req *proto.CreatePaymentOrderReq) (*proto.PaymentCommonRes, error) {
@@ -16,21 +18,36 @@ func (s *PaymentService) CreatePaymentOrder(ctx context.Context, req *proto.Crea
 		"currency": "INR",
 		"receipt":  req.OrderId,
 	}, nil)
+
 	if err != nil {
-		log.Println("Failed to create payment : ", err)
+		logger.Log.WithFields(logrus.Fields{
+			"order_id": req.OrderId,
+			"amount":   req.Amount,
+		}).Error("Failed to create payment order: ", err)
 		return nil, err
 	}
+
 	payment := model.OrderPayment{
 		ReceiptID: req.OrderId,
 		OrderID:   paymentOrder["id"].(string),
 		Status:    "Pending",
 		Amount:    int(req.Amount),
 	}
+	
 	err = s.Repo.CreateOrderPayment(payment)
 	if err != nil {
-		log.Println("Failed to Save paymet: ", err.Error())
+		logger.Log.WithFields(logrus.Fields{
+			"order_id": req.OrderId,
+			"razorpay_id": paymentOrder["id"].(string),
+		}).Error("Failed to save payment order: ", err)
 		return nil, err
 	}
+
+	logger.Log.WithFields(logrus.Fields{
+		"order_id": req.OrderId,
+		"razorpay_id": paymentOrder["id"].(string),
+	}).Info("Payment order created and saved successfully")
+
 	return &proto.PaymentCommonRes{
 		Message: paymentOrder["id"].(string),
 	}, nil

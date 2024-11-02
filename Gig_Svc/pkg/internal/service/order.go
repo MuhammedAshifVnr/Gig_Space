@@ -7,9 +7,15 @@ import (
 
 	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/pkg/model"
 	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/utils/helper"
+	"github.com/spf13/viper"
 
 	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
 )
+
+type StatusEvent struct {
+	OrderID string
+	Event   string
+}
 
 func (s *GigService) CreateOrder(ctx context.Context, req *proto.CreateOrderReq) (*proto.CommonGigRes, error) {
 	GigRes, err := s.repos.GetGigByID(uint(req.GigId))
@@ -201,7 +207,7 @@ func (s *GigService) AcceptRequest(ctx context.Context, req *proto.AcceptReq) (*
 
 func (s *GigService) RejectRequest(ctx context.Context, req *proto.RejectReq) (*proto.CommonGigRes, error) {
 	var err error
-	if req.OrderId[0] == 'C' {	
+	if req.OrderId[0] == 'C' {
 		err = s.repos.RejectCustomOrder(req.OrderId)
 	} else {
 		err = s.repos.RejectOrder(req.OrderId)
@@ -217,4 +223,123 @@ func (s *GigService) RejectRequest(ctx context.Context, req *proto.RejectReq) (*
 		Message: "Order Rejected.",
 		Status:  200,
 	}, nil
+}
+
+func (s *GigService) GetAllOrders(ctx context.Context, req *proto.AllOrdersReq) (*proto.AllOrdersRes, error) {
+	order, err := s.repos.GetAllOrders(uint(req.UserId))
+	if err != nil {
+		log.Printf("Failed to find order: %v", err)
+		return nil, err
+	}
+	COrder, err := s.repos.GetAllCustomOrders(uint(req.UserId))
+	if err != nil {
+		log.Printf("Failed to find order: %v", err)
+		return nil, err
+	}
+	return &proto.AllOrdersRes{
+		Orders:  order,
+		COrders: COrder,
+	}, nil
+}
+
+func (s *GigService) GetOrderByID(ctx context.Context, req *proto.OrderByIDReq) (*proto.OrderDetail, error) {
+	if req.OrderId[0] == 'C' {
+		order, err := s.repos.GetCustomOrderDetail(req.OrderId)
+		if err != nil {
+			log.Printf("Failed to find order: %v", err)
+			return nil, err
+		}
+		return &proto.OrderDetail{
+			OrderId:      order.OrderID,
+			GigId:        uint64(order.CustomGigID),
+			Status:       order.Status,
+			ClientId:     uint64(order.ClinetID),
+			Amount:       int64(order.Amount),
+			LastUpdated:  order.UpdatedAt.String(),
+			OrderCreated: order.CreatedAt.String(),
+		}, nil
+	} else {
+		order, err := s.repos.GetOrderDetail(req.OrderId)
+		if err != nil {
+			log.Printf("Failed to find order: %v", err)
+			return nil, err
+		}
+		return &proto.OrderDetail{
+			OrderId:      order.OrderID,
+			GigId:        uint64(order.GigID),
+			Status:       order.Status,
+			ClientId:     uint64(order.ClinetID),
+			Amount:       int64(order.Amount),
+			LastUpdated:  order.UpdatedAt.String(),
+			OrderCreated: order.CreatedAt.String(),
+		}, nil
+	}
+}
+
+func (s *GigService) ClientUpdatePendingStatus(ctx context.Context, req *proto.OrderIDReq) (*proto.CommonGigRes, error) {
+	if req.OrderId[0] == 'C' {
+		err := s.repos.CordrUpdatePendingStatus(req.OrderId, uint(req.ClientId))
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := s.repos.OrderUpdatePendingStatus(req.OrderId, uint(req.ClientId))
+		if err != nil {
+			return nil, err
+		}
+	}
+	if err := s.SendNotification(ctx, RefundEvent{
+		OrderID: req.OrderId,
+		Event:   "Pending",
+	}, viper.GetString("StatusTopic")); err != nil {
+		return nil, err
+	}
+	return &proto.CommonGigRes{
+		Message: "Order Updated",
+		Status:  200,
+	}, nil
+}
+
+func (s *GigService) ClientUpdateDoneStatus(ctx context.Context, req *proto.OrderIDReq) (*proto.CommonGigRes, error) {
+	if req.OrderId[0] == 'C' {
+		err := s.repos.CordrUpdateDoneStatus(req.OrderId, uint(req.ClientId))
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := s.repos.OrderUpdateDoneStatus(req.OrderId, uint(req.ClientId))
+		if err != nil {
+			return nil, err
+		}
+	}
+	if err := s.SendNotification(ctx, RefundEvent{
+		OrderID: req.OrderId,
+		Event:   "Done",
+	}, viper.GetString("StatusTopic")); err != nil {
+		return nil, err
+	}
+	return &proto.CommonGigRes{
+		Message: "Order Updated",
+		Status:  200,
+	}, nil
+}
+
+func (s *GigService) GetFreelancerIDByOrder(ctx context.Context, req *proto.OrderByIDReq) (*proto.UserIDRes, error) {
+	if req.OrderId[0] == 'C' {
+		order, err := s.repos.GetCustomOrderDetail(req.OrderId)
+		if err != nil {
+			return nil, err
+		}
+		return &proto.UserIDRes{
+			UserId: uint64(order.FreelancerID),
+		}, nil
+	} else {
+		order, err := s.repos.GetOrderByID(req.OrderId)
+		if err != nil {
+			return nil, err
+		}
+		return &proto.UserIDRes{
+			UserId: uint64(order.FreelancerID),
+		}, nil
+	}
 }

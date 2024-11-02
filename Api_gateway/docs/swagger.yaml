@@ -156,6 +156,62 @@ paths:
       summary: Admin login
       tags:
       - Admin
+  /admin/orders/complet/{OrderID}:
+    post:
+      consumes:
+      - application/json
+      description: Initiates a complet for a specified order by its OrderID.
+      parameters:
+      - description: ID of the order to be completed
+        in: path
+        name: OrderID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Process a complet for an order
+      tags:
+      - GetAllComplet
+  /admin/orders/completed:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all complet orders in the system.
+      produces:
+      - application/json
+      responses: {}
+      summary: Get all complet orders
+      tags:
+      - GetAllCompleted
+  /admin/orders/refund:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all refund orders in the system.
+      produces:
+      - application/json
+      responses: {}
+      summary: Get all refund orders
+      tags:
+      - GetAllRefund
+  /admin/orders/refund/{OrderID}:
+    post:
+      consumes:
+      - application/json
+      description: Initiates a refund for a specified order by its OrderID.
+      parameters:
+      - description: ID of the order to be refunded
+        in: path
+        name: OrderID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Process a refund for an order
+      tags:
+      - GetAllRefund
   /admin/plan/{PlanID}:
     delete:
       description: This endpoint deletes a payment plan based on the provided PlanID.
@@ -403,6 +459,34 @@ paths:
       summary: Create a new gig
       tags:
       - Gigs
+  /gig/client/{gig_id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific gig by its ID.
+      parameters:
+      - description: Gig ID
+        in: path
+        name: gig_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Get Gig by ID
+      tags:
+      - Gigs
+  /gig/client/all:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all gigs excluding the specified user ID.
+      produces:
+      - application/json
+      responses: {}
+      summary: Get All Gigs
+      tags:
+      - Gigs
   /gig/custom:
     post:
       consumes:
@@ -490,6 +574,68 @@ paths:
       - application/json
       responses: {}
       summary: Create an order
+      tags:
+      - Orders
+  /gig/orders/{order_id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve details of a specific order using its unique ID
+      parameters:
+      - description: Order ID
+        in: path
+        name: order_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Get order by ID
+      tags:
+      - Orders
+  /gig/orders/{order_id}/done:
+    put:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Update the status of a specific order by the client
+      parameters:
+      - description: Order ID
+        in: path
+        name: order_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Update order status
+      tags:
+      - Orders
+  /gig/orders/{order_id}/pending:
+    put:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Update the status of a specific order by the client
+      parameters:
+      - description: Order ID
+        in: path
+        name: order_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Update order status
+      tags:
+      - Orders
+  /gig/orders/freelancer:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all orders associated with the authenticated freelancer
+      produces:
+      - application/json
+      responses: {}
+      summary: Get all orders for a freelancer
       tags:
       - Orders
   /gig/quotes:

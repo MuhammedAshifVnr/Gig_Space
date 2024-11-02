@@ -41,4 +41,5 @@ type RepoInter interface {
 	CreateAddress(State, District, City string, id int) error
 	GetAddress(id uint) model.Address
 	RoleChange(role string, id uint) error
+	GetUserEmail(userid uint)(string,error)
 }

@@ -3,7 +3,7 @@ module github.com/MuhammedAshifVnr/Gig_Space/api_gateway
 go 1.22.0
 
 require (
-	github.com/MuhammedAshifVnr/Gig_Space_Proto v1.1.44
+	github.com/MuhammedAshifVnr/Gig_Space_Proto v1.1.60
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/gofiber/swagger v1.1.0
 	github.com/gofiber/websocket/v2 v2.2.1

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -279,6 +280,90 @@ func (h *PaymentHandler) DeletPlan(c *fiber.Ctx) error {
 	id := c.Params("PlanID")
 	res, err := h.PaymentClient.DeletePlan(context.Background(), &proto.DeletePlanReq{
 		PlanId: id,
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(200).JSON(res)
+}
+
+// @Summary Get all refund orders
+// @Description Retrieves a list of all refund orders in the system.
+// @Tags GetAllRefund
+// @Accept json
+// @Produce json
+// @Router /admin/orders/refund [get]
+func (h *GigHandler) GetAllRefundOrders(c *fiber.Ctx) error {
+	res, err := h.GigClinet.AdminOrderController(context.Background(), &proto.EmptyGigReq{})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(200).JSON(res)
+}
+
+// @Summary Process a refund for an order
+// @Description Initiates a refund for a specified order by its OrderID.
+// @Tags GetAllRefund
+// @Accept json
+// @Produce json
+// @Param OrderID path string true "ID of the order to be refunded"
+// @Router /admin/orders/refund/{OrderID} [post]
+func (h *GigHandler) Refund(c *fiber.Ctx) error {
+	OrderID := c.Params("OrderID")
+	if OrderID == "" {
+		fmt.Println(OrderID)
+		return c.Status(400).JSON(fiber.Map{
+			"error": "All fields are requered",
+		})
+	}
+	res, err := h.GigClinet.AdOrderRefund(context.Background(), &proto.AdRefundReq{
+		OrderId: OrderID,
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(200).JSON(res)
+}
+
+// @Summary Get all complet orders
+// @Description Retrieves a list of all complet orders in the system.
+// @Tags GetAllCompleted
+// @Accept json
+// @Produce json
+// @Router /admin/orders/completed [get]
+func (h *GigHandler) GetAllCompletedOrders(c *fiber.Ctx) error {
+	res, err := h.GigClinet.AdOrderCheck(context.Background(), &proto.EmptyGigReq{})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(200).JSON(res)
+}
+
+// @Summary Process a complet for an order
+// @Description Initiates a complet for a specified order by its OrderID.
+// @Tags GetAllComplet
+// @Accept json
+// @Produce json
+// @Param OrderID path string true "ID of the order to be completed"
+// @Router /admin/orders/complet/{OrderID} [post]
+func (h *GigHandler) Payment(c *fiber.Ctx) error {
+	OrderID := c.Params("OrderID")
+	if OrderID == "" {
+		fmt.Println(OrderID)
+		return c.Status(400).JSON(fiber.Map{
+			"error": "All fields are requered",
+		})
+	}
+	res, err := h.GigClinet.AdOrderRefund(context.Background(), &proto.AdRefundReq{
+		OrderId: OrderID,
 	})
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{

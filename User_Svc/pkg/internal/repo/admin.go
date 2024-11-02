@@ -77,3 +77,15 @@ func (r *UserRepo) UnBlockUser(id uint) error {
 	err := r.DB.Exec(query, true, id)
 	return err.Error
 }
+
+func (r *UserRepo) GetUserEmail(userid uint) (string, error) {
+	var email model.User
+	query := `SELECT * FROM users WHERE id = ?`
+
+	// Execute the query and scan the result into `email`
+	if err := r.DB.Raw(query, userid).Scan(&email).Error; err != nil {
+		return "", fmt.Errorf("failed to retrieve email for user ID %d: %w", userid, err)
+	}
+
+	return email.Email, nil
+}

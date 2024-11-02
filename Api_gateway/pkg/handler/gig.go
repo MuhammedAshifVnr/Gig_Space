@@ -440,3 +440,121 @@ func (h *GigHandler) RejectOrder(c *fiber.Ctx) error {
 	}
 	return c.Status(200).JSON(res)
 }
+
+// @Summary      Get all orders for a freelancer
+// @Description  Retrieve all orders associated with the authenticated freelancer
+// @Tags         Orders
+// @Accept       json
+// @Produce      json
+// @Router       /gig/orders/freelancer [get]
+func (h *GigHandler) GetAllOrdersFreelancer(c *fiber.Ctx) error {
+	userid, _ := c.Locals("userID").(uint)
+	res, err := h.GigClinet.GetAllOrders(context.Background(), &proto.AllOrdersReq{UserId: uint64(userid)})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(200).JSON(res)
+}
+
+// @Summary      Get order by ID
+// @Description  Retrieve details of a specific order using its unique ID
+// @Tags         Orders
+// @Accept       json
+// @Produce      json
+// @Param        order_id   path      string   true   "Order ID"
+// @Router       /gig/orders/{order_id} [get]
+func (h *GigHandler) GetOrderByID(c *fiber.Ctx) error {
+	orderID := c.Params("order_id")
+	res, err := h.GigClinet.GetOrderByID(context.Background(), &proto.OrderByIDReq{
+		OrderId: orderID,
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(200).JSON(res)
+}
+
+// @Summary      Update order status
+// @Description  Update the status of a specific order by the client
+// @Tags         Orders
+// @Accept       application/x-www-form-urlencoded
+// @Produce      json
+// @Param        order_id   path      string   true    "Order ID"
+// @Router       /gig/orders/{order_id}/pending [put]
+func (h *GigHandler) ClientPendingUpdate(c *fiber.Ctx) error {
+	orderID := c.Params("order_id")
+	client := c.Locals("userID").(uint)
+	res, err := h.GigClinet.ClientUpdatePendingStatus(context.Background(),&proto.OrderIDReq{
+		OrderId: orderID,
+		ClientId: uint64(client),
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(200).JSON(res)
+}
+
+// @Summary      Update order status
+// @Description  Update the status of a specific order by the client
+// @Tags         Orders
+// @Accept       application/x-www-form-urlencoded
+// @Produce      json
+// @Param        order_id   path      string   true    "Order ID"
+// @Router       /gig/orders/{order_id}/done [put]
+func (h *GigHandler) ClientDoneUpdate(c *fiber.Ctx) error {
+	orderID := c.Params("order_id")
+	client := c.Locals("userID").(uint)
+	res, err := h.GigClinet.ClientUpdateDoneStatus(context.Background(),&proto.OrderIDReq{
+		OrderId: orderID,
+		ClientId: uint64(client),
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(200).JSON(res)
+}
+
+// @Summary      Get All Gigs
+// @Description  Retrieve all gigs excluding the specified user ID.
+// @Tags         Gigs
+// @Accept       json
+// @Produce      json
+// @Router       /gig/client/all    [get]
+func (h *GigHandler) ClientGetAllGig(c *fiber.Ctx) error {
+	client := c.Locals("userID").(uint)
+	res, err := h.GigClinet.GetAllGig(context.Background(), &proto.GigReq{UserId: uint64(client)})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(200).JSON(res)
+}
+
+// @Summary      Get Gig by ID
+// @Description  Retrieve a specific gig by its ID.
+// @Tags         Gigs
+// @Accept       json
+// @Produce      json
+// @Param        gig_id     path      int     true    "Gig ID"
+// @Router       /gig/client/{gig_id} [get]
+func (h *GigHandler) ClientGetGigByID(c *fiber.Ctx) error {
+	gig_id, _ := strconv.Atoi(c.Params("gig_id"))
+	res, err := h.GigClinet.GetGigByID(context.Background(), &proto.GigIDreq{
+		GigId: uint64(gig_id),
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(200).JSON(res)
+}

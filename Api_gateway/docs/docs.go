@@ -176,6 +176,88 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/admin/orders/complet/{OrderID}": {
+            "post": {
+                "description": "Initiates a complet for a specified order by its OrderID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GetAllComplet"
+                ],
+                "summary": "Process a complet for an order",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID of the order to be completed",
+                        "name": "OrderID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/admin/orders/completed": {
+            "get": {
+                "description": "Retrieves a list of all complet orders in the system.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GetAllCompleted"
+                ],
+                "summary": "Get all complet orders",
+                "responses": {}
+            }
+        },
+        "/admin/orders/refund": {
+            "get": {
+                "description": "Retrieves a list of all refund orders in the system.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GetAllRefund"
+                ],
+                "summary": "Get all refund orders",
+                "responses": {}
+            }
+        },
+        "/admin/orders/refund/{OrderID}": {
+            "post": {
+                "description": "Initiates a refund for a specified order by its OrderID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GetAllRefund"
+                ],
+                "summary": "Process a refund for an order",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID of the order to be refunded",
+                        "name": "OrderID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/admin/plan/{PlanID}": {
             "delete": {
                 "description": "This endpoint deletes a payment plan based on the provided PlanID.",
@@ -391,6 +473,47 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/gig/client/all": {
+            "get": {
+                "description": "Retrieve all gigs excluding the specified user ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Gigs"
+                ],
+                "summary": "Get All Gigs",
+                "responses": {}
+            }
+        },
+        "/gig/client/{gig_id}": {
+            "get": {
+                "description": "Retrieve a specific gig by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Gigs"
+                ],
+                "summary": "Get Gig by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Gig ID",
+                        "name": "gig_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/gig/custom": {
             "post": {
                 "description": "This endpoint allows freelancers to create a custom gig based on a client's request.",
@@ -510,6 +633,97 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Gig ID",
                         "name": "GigID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/gig/orders/freelancer": {
+            "get": {
+                "description": "Retrieve all orders associated with the authenticated freelancer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Get all orders for a freelancer",
+                "responses": {}
+            }
+        },
+        "/gig/orders/{order_id}": {
+            "get": {
+                "description": "Retrieve details of a specific order using its unique ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Get order by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Order ID",
+                        "name": "order_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/gig/orders/{order_id}/done": {
+            "put": {
+                "description": "Update the status of a specific order by the client",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Update order status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Order ID",
+                        "name": "order_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/gig/orders/{order_id}/pending": {
+            "put": {
+                "description": "Update the status of a specific order by the client",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Update order status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Order ID",
+                        "name": "order_id",
                         "in": "path",
                         "required": true
                     }

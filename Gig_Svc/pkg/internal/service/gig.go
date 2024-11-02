@@ -10,6 +10,7 @@ import (
 	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/utils/upimage"
 	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/segmentio/kafka-go"
 )
 
 type GigService struct {
@@ -18,16 +19,18 @@ type GigService struct {
 	userClient    proto.UserServiceClient
 	searchClient  proto.SearchServiceClient
 	paymetnClient proto.PaymentServiceClient
+	kafkaWriter   map[string]*kafka.Writer
 	proto.UnimplementedGigServiceServer
 }
 
-func NewGigService(repo repo.RepoInter, s3Svc *s3.S3, UserClient proto.UserServiceClient, SearchClient proto.SearchServiceClient,payment proto.PaymentServiceClient) *GigService {
+func NewGigService(repo repo.RepoInter, s3Svc *s3.S3, UserClient proto.UserServiceClient, SearchClient proto.SearchServiceClient, payment proto.PaymentServiceClient, kafkaWriter map[string]*kafka.Writer) *GigService {
 	return &GigService{
-		repos:        repo,
-		s3:           s3Svc,
-		searchClient: SearchClient,
-		userClient:   UserClient,
+		repos:         repo,
+		s3:            s3Svc,
+		searchClient:  SearchClient,
+		userClient:    UserClient,
 		paymetnClient: payment,
+		kafkaWriter:   kafkaWriter,
 	}
 }
 
@@ -214,3 +217,47 @@ func (s *GigService) DeleteGigByID(ctx context.Context, req *proto.DeleteReq) (*
 	}, nil
 }
 
+func (s *GigService) GetAllGig(ctx context.Context, req *proto.GigReq) (*proto.GetAllGigRes, error) {
+	gigs, err := s.repos.GetAllGigs(uint(req.UserId))
+	if err != nil {
+		log.Println("Failed to find gigs: ", err)
+		return nil, err
+	}
+	var result []*proto.GigCatlog
+	for _, val := range gigs {
+		result = append(result, &proto.GigCatlog{
+			GigId:  uint64(val.ID),
+			Title:  val.Title,
+			Image:  val.Images[0].Url,
+			Amount: int64(val.Price),
+		})
+	}
+	return &proto.GetAllGigRes{
+		Gigs: result,
+	}, nil
+}
+
+func (s *GigService) GetGigByID(ctx context.Context, req *proto.GigIDreq) (*proto.GetGigRes, error) {
+	gig, err := s.repos.ClientGetGigByID(uint(req.GigId))
+	if err != nil {
+		log.Println("Failed to find gig: ", err)
+		return nil, err
+	}
+	var images []*proto.Image
+	for _, url := range gig.Images {
+		images = append(images, &proto.Image{Url: url.Url})
+	}
+	return &proto.GetGigRes{
+		Gigs: &proto.Gig{
+			Id:           uint64(gig.ID),
+			Title:        gig.Title,
+			Description:  gig.Description,
+			Category:     gig.Category,
+			Price:        float32(gig.Price),
+			DeliveryDays: int32(gig.DeliveryDays),
+			Revisions:    int32(gig.Revisions),
+			FreelancerId: uint64(gig.FreelancerID),
+			Image:        images,
+		},
+	}, nil
+}

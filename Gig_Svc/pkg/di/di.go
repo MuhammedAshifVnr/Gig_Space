@@ -1,6 +1,7 @@
 package di
 
 import (
+	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/pkg/config"
 	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/pkg/db"
 	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/pkg/internal/repo"
 	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/pkg/internal/service"
@@ -14,7 +15,8 @@ func InitializeService() *service.GigService {
 	userClient := client.NewUserClinet()
 	searchClient := client.NewSearchClinet()
 	paymentClient := client.NewPaymentClinet()
-	service := service.NewGigService(repo, s3Svc, userClient, searchClient, paymentClient)
+	kafkaWriter:=config.InitKafkaWriters([]string{viper.GetString("Broker")},[]string{viper.GetString("RefundTopic"),viper.GetString("StatusTopic"),viper.GetString("PaymentTopic")})
+	service := service.NewGigService(repo, s3Svc, userClient, searchClient, paymentClient,kafkaWriter)
 
 	return service
 }

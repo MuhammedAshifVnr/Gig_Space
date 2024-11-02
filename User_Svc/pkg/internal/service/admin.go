@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -69,7 +70,7 @@ func (s *UserService) AddSkill(ctx context.Context, req *proto.AddSkillReq) (*pr
 	}
 	err := s.reops.AddSkill(skill)
 	if err != nil {
-		log.Println("Failed to Add Skill: ",err.Error())
+		log.Println("Failed to Add Skill: ", err.Error())
 		return &proto.CommonRes{}, err
 	}
 	return &proto.CommonRes{
@@ -81,7 +82,7 @@ func (s *UserService) AddSkill(ctx context.Context, req *proto.AddSkillReq) (*pr
 func (s *UserService) GetCategory(ctx context.Context, req *proto.EmtpyReq) (*proto.GetCategoryRes, error) {
 	categors, err := s.reops.GetCategory()
 	if err != nil {
-		log.Println("Failed to Find Category: ",err.Error())
+		log.Println("Failed to Find Category: ", err.Error())
 		return &proto.GetCategoryRes{}, err
 	}
 	return &proto.GetCategoryRes{
@@ -93,7 +94,7 @@ func (s *UserService) GetCategory(ctx context.Context, req *proto.EmtpyReq) (*pr
 func (s *UserService) GetSkill(ctx context.Context, req *proto.EmtpyReq) (*proto.GetSkillsRes, error) {
 	skills, err := s.reops.GetSkills()
 	if err != nil {
-		log.Println("Failed to Find Skill: ",err.Error())
+		log.Println("Failed to Find Skill: ", err.Error())
 		return &proto.GetSkillsRes{}, err
 	}
 	return &proto.GetSkillsRes{
@@ -104,7 +105,7 @@ func (s *UserService) GetSkill(ctx context.Context, req *proto.EmtpyReq) (*proto
 func (s *UserService) AdDeleteSkill(ctx context.Context, req *proto.ADeleteSkillReq) (*proto.EmtpyRes, error) {
 	err := s.reops.AdminDeleteSkill(uint(req.Id))
 	if err != nil {
-		log.Println("Failed to Delete Skill: ",err.Error())
+		log.Println("Failed to Delete Skill: ", err.Error())
 		return &proto.EmtpyRes{}, err
 	}
 	return &proto.EmtpyRes{}, nil
@@ -113,7 +114,7 @@ func (s *UserService) AdDeleteSkill(ctx context.Context, req *proto.ADeleteSkill
 func (s *UserService) DeleteCategory(ctx context.Context, req *proto.DeleteCatReq) (*proto.EmtpyRes, error) {
 	err := s.reops.AdminDeleteCategory(uint(req.Id))
 	if err != nil {
-		log.Println("Failed to Delete Category: ",err.Error())
+		log.Println("Failed to Delete Category: ", err.Error())
 		return &proto.EmtpyRes{}, err
 	}
 	return &proto.EmtpyRes{}, nil
@@ -122,7 +123,7 @@ func (s *UserService) DeleteCategory(ctx context.Context, req *proto.DeleteCatRe
 func (s *UserService) GetAllUsers(ctx context.Context, req *proto.EmtpyReq) (*proto.GetAllUserRes, error) {
 	users, err := s.reops.GetAllUsers()
 	if err != nil {
-		log.Println("Failed to Find Users: ",err.Error())
+		log.Println("Failed to Find Users: ", err.Error())
 		return &proto.GetAllUserRes{}, err
 	}
 	return &proto.GetAllUserRes{
@@ -133,19 +134,19 @@ func (s *UserService) GetAllUsers(ctx context.Context, req *proto.EmtpyReq) (*pr
 func (s *UserService) AdminUserBlock(ctx context.Context, req *proto.BlockReq) (*proto.CommonRes, error) {
 	user, err := s.reops.GetUserByID(uint(req.Id))
 	if err != nil {
-		log.Println("Failed to Find User: ",err.Error())
+		log.Println("Failed to Find User: ", err.Error())
 		return &proto.CommonRes{}, err
 	}
 	if !user.IsActive {
 		err := s.reops.UnBlockUser(user.ID)
 		if err != nil {
-			log.Println("Failed to UnBlock User: ",err.Error())
+			log.Println("Failed to UnBlock User: ", err.Error())
 			return &proto.CommonRes{}, err
 		}
 	} else {
 		err := s.reops.BlockUser(user.ID)
 		if err != nil {
-			log.Println("Failed to Bolck User: ",err.Error())
+			log.Println("Failed to Bolck User: ", err.Error())
 			return &proto.CommonRes{}, err
 		}
 	}
@@ -154,4 +155,16 @@ func (s *UserService) AdminUserBlock(ctx context.Context, req *proto.BlockReq) (
 		Status:  200,
 	}, nil
 
+}
+
+func (s *UserService) GetUserEmail(ctx context.Context, req *proto.ProfileReq) (*proto.EmailRes, error) {
+	fmt.Println("USerID",req.UserId)
+	User, err := s.reops.GetUserByID(uint(req.UserId))
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(User.Email)
+	return &proto.EmailRes{
+		Email: User.Email,
+	}, nil
 }

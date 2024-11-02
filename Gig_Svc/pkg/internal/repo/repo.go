@@ -243,9 +243,9 @@ func (r *GigRepo) RejectCustomOrder(orderID string) error {
 	return err.Error
 }
 
-func (r *GigRepo) AdminGetOrders() ([]*proto.Request, []*proto.Request, error) {
+func (r *GigRepo) AdminGetOrders(status string) ([]*proto.Request, []*proto.Request, error) {
 	var result []model.Order
-	status := "Freelancer Rejected"
+	
 	query := `SELECT * FROM orders WHERE status = ?`
 
 	err := r.DB.Raw(query, status).Scan(&result).Error
@@ -286,20 +286,98 @@ func (r *GigRepo) AdminGetOrders() ([]*proto.Request, []*proto.Request, error) {
 	return orders, customOrders, nil
 }
 
-func (r *GigRepo)GetOrderByID(order_id string)(model.Order,error){
+func (r *GigRepo) GetOrderByID(order_id string) (model.Order, error) {
 	var order model.Order
-	query:=`select * from orders where order_id = ?`
-	err:=r.DB.Raw(query,order_id).Scan(&order).Error
-	return order,err
+	query := `select * from orders where order_id = ?`
+	err := r.DB.Raw(query, order_id).Scan(&order).Error
+	return order, err
 }
 
-func (r *GigRepo)GetCustomOrderByID(order_id string)(model.CustomOrder,error){
+func (r *GigRepo) GetCustomOrderByID(order_id string) (model.CustomOrder, error) {
 	var order model.CustomOrder
-	query:=`select * from custom_orders where order_id = ?`
-	err:=r.DB.Raw(query,order_id).Scan(&order).Error
-	return order,err
+	query := `select * from custom_orders where order_id = ?`
+	err := r.DB.Raw(query, order_id).Scan(&order).Error
+	return order, err
 }
 
-// func (r *GigRepo)AdRefund(order_id string)error{
+func (r *GigRepo) GetAllOrders(userID uint) ([]*proto.OrderCatlog, error) {
+	var orders []*proto.OrderCatlog
+	query := `select  order_id ,gig_id ,status from orders where freelancer_id =?`
+	err := r.DB.Raw(query, userID).Scan(&orders).Error
+	return orders, err
+}
 
-// }
+func (r *GigRepo) GetAllCustomOrders(userID uint) ([]*proto.OrderCatlog, error) {
+	var orders []*proto.OrderCatlog
+	query := `select  order_id ,custom_gig_id ,status from custom_orders where freelancer_id =?`
+	err := r.DB.Raw(query, userID).Scan(&orders).Error
+	return orders, err
+}
+
+func (r *GigRepo) GetOrderDetail(orderID string) (model.Order, error) {
+	var order model.Order
+	query := `select * from orders where order_id = ?`
+	err := r.DB.Raw(query, orderID).Scan(&order).Error
+	return order, err
+}
+
+func (r *GigRepo) GetCustomOrderDetail(orderID string) (model.CustomOrder, error) {
+	var order model.CustomOrder
+	query := `select * from custom_orders where order_id = ?`
+	err := r.DB.Raw(query, orderID).Scan(&order).Error
+	return order, err
+}
+
+func (r *GigRepo) ClientUpdateOrderStatus(orderID, status string, clientID uint) error {
+	query := `UPDATE orders SET status = ? WHERE order_id = ? AND clinet_id =? AND status IN ('ongoing', 'pending')`
+	return r.DB.Exec(query, status, orderID, clientID).Error
+}
+
+func (r *GigRepo) GetAllGigs(userID uint) ([]model.Gig, error) {
+	var gigs []model.Gig
+	err := r.DB.Preload("Images").Where("freelancer_id != ?", userID).Find(&gigs).Error
+	return gigs, err
+}
+
+func (r *GigRepo) ClientGetGigByID(gigID uint) (model.Gig, error) {
+	var gig model.Gig
+	err := r.DB.Preload("Images").Where("id = ?", gigID).First(&gig).Error
+	return gig, err
+}
+
+func (r *GigRepo) OrderUpdatePendingStatus(orderID string, clientID uint) error {
+	query := `UPDATE orders SET status = ? WHERE order_id = ?  AND clinet_id =? AND status ='Ongoing'`
+	err := r.DB.Exec(query, "Pending", orderID, clientID)
+	if err.RowsAffected == 0 {
+		return fmt.Errorf("no rows were updated for order_id %s and client_id %d", orderID, clientID)
+	}
+	return err.Error
+}
+
+func (r *GigRepo) CordrUpdatePendingStatus(orderID string, clientID uint) error {
+	query := `UPDATE custom_orders SET status = ? WHERE order_id = ? AND clinet_id =? AND status ='Ongoing'`
+	err := r.DB.Exec(query, "Pending", orderID, clientID)
+	if err.RowsAffected == 0 {
+		return fmt.Errorf("no rows were updated for order_id %s and client_id %d", orderID, clientID)
+	}
+	return err.Error
+}
+
+func (r *GigRepo) OrderUpdateDoneStatus(orderID string, clientID uint) error {
+	query := `UPDATE orders SET status = ? WHERE order_id = ? AND clinet_id =? AND  status IN ('Ongoing', 'Pending')`
+	err := r.DB.Exec(query, "Done", orderID, clientID)
+	if err.RowsAffected == 0 {
+		return fmt.Errorf("no rows were updated for order_id %s and client_id %d", orderID, clientID)
+	}
+	return err.Error
+}
+
+func (r *GigRepo) CordrUpdateDoneStatus(orderID string, clientID uint) error {
+	query := `UPDATE custom_orders SET status = ? WHERE order_id = ? AND clinet_id =? AND  status IN ('Ongoing', 'Pending')`
+	err := r.DB.Exec(query, "Done", orderID, clientID)
+	if err.RowsAffected == 0 {
+		return fmt.Errorf("no rows were updated for order_id %s and client_id %d", orderID, clientID)
+	}
+	return err.Error
+}
+
