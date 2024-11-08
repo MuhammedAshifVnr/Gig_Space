@@ -69,8 +69,12 @@ func (h *MessagingHandler) DispatchMessage(users map[int32]*websocket.Conn, msg 
 	msgData.SenderID = int32(userID)
 	recipientConn, isOnline := users[msgData.RecipientID]
 	if !isOnline {
+		_, err := h.MsgClient.SendOflineNotification(context.Background(), &proto.NotifiyReq{SenderId: uint32(userID), RecipientId: uint32(msgData.RecipientID)})
+		if err != nil {
+			log.Println("Failed to sent Notification into offline user: ", err)
+		}
 		delete(users, msgData.RecipientID)
-		err := h.PublishToQueue(msgData)
+		err = h.PublishToQueue(msgData)
 		if err != nil {
 			senderConn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 		}

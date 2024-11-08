@@ -27,4 +27,7 @@ type RepoInter interface {
 	AddFundAccID(FundID string, userID uint) error
 	UpdateWallet(wallet model.Wallet)error
 	AddRefundAmount(user_id uint, amount int) error
+	UpdatePin(user_id uint, pin string) error
+	ForgotPinOtp(data model.Wallet, OTP string) error
+	VerifyOtp(otp string)(string,error)
 }

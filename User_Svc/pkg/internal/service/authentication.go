@@ -201,7 +201,7 @@ func (s *UserService) ForgotPassword(ctx context.Context, req *proto.FP_Req) (*p
 func (s *UserService) ResetPassword(ctx context.Context, req *proto.ResetPwdReq) (*proto.CommonRes, error) {
 	val, err := s.reops.VerifyingEmail(req.Otp, "")
 	if err == redis.Nil {
-		return &proto.CommonRes{}, errors.New("this OTP was expired")
+		return &proto.CommonRes{}, errors.New("this OTP was invalid or expired")
 	}
 	var user model.User
 	err = json.Unmarshal([]byte(val), &user)

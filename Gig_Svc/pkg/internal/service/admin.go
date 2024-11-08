@@ -98,7 +98,7 @@ func (s *GigService) AdOrderRefund(ctx context.Context, req *proto.AdRefundReq) 
 	}, nil
 }
 
-func (s *GigService) SendNotification(ctx context.Context, event RefundEvent, key string) error {
+func (s *GigService) SendNotification(ctx context.Context, event interface{}, key string) error {
 	eventData, err := json.Marshal(event)
 	if err != nil {
 		return fmt.Errorf("failed to marshal event: %w", err)

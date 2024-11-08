@@ -250,3 +250,112 @@ func (h *PaymentHandler) Withdrawal(c *fiber.Ctx) error {
 	}
 	return c.Status(int(res.Status)).JSON(res)
 }
+
+// @Summary Change Wallet PIN
+// @Description Allows the user to change their wallet PIN by providing the current PIN and a new PIN.
+// @Tags Wallet
+// @Accept application/x-www-form-urlencoded
+// @Produce json
+// @Param current_pin formData int true "Current PIN"
+// @Param new_pin1 formData int true "New PIN"
+// @Param new_pin2 formData int true "Confirm New PIN"
+// @Router /payments/wallet/change-pin [post]
+func (h *PaymentHandler) ChangeWalletPin(c *fiber.Ctx) error {
+	userID, ok := c.Locals("userID").(uint)
+	if !ok {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid user ID"})
+	}
+
+	currentPin, err := strconv.Atoi(c.FormValue("current_pin"))
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid format for current PIN"})
+	}
+
+	newPin1, err := strconv.Atoi(c.FormValue("new_pin1"))
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid format for new PIN"})
+	}
+
+	newPin2, err := strconv.Atoi(c.FormValue("new_pin2"))
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid format for confirm new PIN"})
+	}
+
+	if newPin1 != newPin2 {
+		return c.Status(400).JSON(fiber.Map{"error": "New PIN entries do not match"})
+	}
+
+	hashPin, err := helper.HashPassword(strconv.Itoa(newPin2))
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Error hashing PIN"})
+	}
+
+	res, err := h.PaymentClient.ChangeWalletPin(context.Background(), &proto.ChangePinReq{
+		UserId:     uint64(userID),
+		CurrentPin: strconv.Itoa(currentPin),
+		NewPin:     hashPin,
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(int(res.Status)).JSON(res)
+}
+
+// @Summary      Request OTP for resetting wallet PIN
+// @Description  Generates and sends an OTP to the user's registered email to reset their wallet PIN.
+// @Tags         Wallet
+// @Accept       json
+// @Produce      json
+// @Router       /payments/wallet/forgot-pin [post]
+func (h *PaymentHandler) ForgotWalletPin(c *fiber.Ctx) error {
+	userID, _ := c.Locals("userID").(uint)
+	res, err := h.PaymentClient.ForgotWalletPin(context.Background(), &proto.ForgotPinReq{
+		UserId: uint64(userID),
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(int(res.Status)).JSON(res)
+}
+
+// @Summary Reset Wallet PIN
+// @Description Resets the wallet PIN for the user after OTP verification
+// @Tags Wallet
+// @Accept multipart/form-data
+// @Produce json
+// @Param OTP formData string true "One-Time Password (OTP)"
+// @Param new_pin1 formData int true "New PIN"
+// @Param new_pin2 formData int true "Confirm New PIN"
+// @Router /payments/wallet/reset-pin [post]
+func (h *PaymentHandler) ResetWalletPin(c *fiber.Ctx) error {
+	otp := c.FormValue("OTP")
+	newPin1, err := strconv.Atoi(c.FormValue("new_pin1"))
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid format for new PIN"})
+	}
+
+	newPin2, err := strconv.Atoi(c.FormValue("new_pin2"))
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid format for confirm new PIN"})
+	}
+
+	if newPin1 != newPin2 {
+		return c.Status(400).JSON(fiber.Map{"error": "New PIN entries do not match"})
+	}
+
+	hashPin, err := helper.HashPassword(strconv.Itoa(newPin2))
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Error hashing PIN"})
+	}
+	res, err := h.PaymentClient.ResetWalletPin(context.Background(), &proto.PinResetReq{
+		Otp: otp,
+		Pin: hashPin,
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(int(res.Status)).JSON(res)
+}

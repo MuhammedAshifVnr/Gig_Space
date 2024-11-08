@@ -1092,6 +1092,45 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/payments/wallet/change-pin": {
+            "post": {
+                "description": "Allows the user to change their wallet PIN by providing the current PIN and a new PIN.",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Change Wallet PIN",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Current PIN",
+                        "name": "current_pin",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "New PIN",
+                        "name": "new_pin1",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Confirm New PIN",
+                        "name": "new_pin2",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/payments/wallet/create": {
             "post": {
                 "description": "This endpoint allows users to create a wallet with a secure PIN.",
@@ -1117,6 +1156,61 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Repeat PIN to confirm",
                         "name": "RePin",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/payments/wallet/forgot-pin": {
+            "post": {
+                "description": "Generates and sends an OTP to the user's registered email to reset their wallet PIN.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Request OTP for resetting wallet PIN",
+                "responses": {}
+            }
+        },
+        "/payments/wallet/reset-pin": {
+            "post": {
+                "description": "Resets the wallet PIN for the user after OTP verification",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Reset Wallet PIN",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "One-Time Password (OTP)",
+                        "name": "OTP",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "New PIN",
+                        "name": "new_pin1",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Confirm New PIN",
+                        "name": "new_pin2",
                         "in": "formData",
                         "required": true
                     }

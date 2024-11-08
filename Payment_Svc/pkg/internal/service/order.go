@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/MuhammedAshifVnr/Gig_Space/Payment_Svc/pkg/logger"
 	"github.com/MuhammedAshifVnr/Gig_Space/Payment_Svc/pkg/model"
@@ -33,18 +32,18 @@ func (s *PaymentService) CreatePaymentOrder(ctx context.Context, req *proto.Crea
 		Status:    "Pending",
 		Amount:    int(req.Amount),
 	}
-	
+
 	err = s.Repo.CreateOrderPayment(payment)
 	if err != nil {
 		logger.Log.WithFields(logrus.Fields{
-			"order_id": req.OrderId,
+			"order_id":    req.OrderId,
 			"razorpay_id": paymentOrder["id"].(string),
 		}).Error("Failed to save payment order: ", err)
 		return nil, err
 	}
 
 	logger.Log.WithFields(logrus.Fields{
-		"order_id": req.OrderId,
+		"order_id":    req.OrderId,
 		"razorpay_id": paymentOrder["id"].(string),
 	}).Info("Payment order created and saved successfully")
 
@@ -56,13 +55,19 @@ func (s *PaymentService) CreatePaymentOrder(ctx context.Context, req *proto.Crea
 func (s *PaymentService) UpdatePaymentStatus(ctx context.Context, req *proto.UpdatePaymentReq) (*proto.PaymentCommonRes, error) {
 	err := payment.RazorPaymentVerification(req.Signature, req.OrderId, req.PaymentId)
 	if err != nil {
-		log.Println("Failed to verify payment signature:", err)
+		logger.Log.WithFields(logrus.Fields{
+			"order_id":   req.OrderId,
+			"payment_id": req.PaymentId,
+		}).Error("Failed to verify payment signature: ", err)
 		return nil, fmt.Errorf("payment verification failed: %w", err)
 	}
 
 	receiptID, err := s.Repo.UpdateStatus(req.OrderId, req.PaymentId, "success")
 	if err != nil {
-		log.Println("Failed to update payment status:", err)
+		logger.Log.WithFields(logrus.Fields{
+			"order_id":   req.OrderId,
+			"payment_id": req.PaymentId,
+		}).Error("Failed to update payment status: ", err)
 		return nil, fmt.Errorf("failed to update payment status: %w", err)
 	}
 
@@ -71,10 +76,16 @@ func (s *PaymentService) UpdatePaymentStatus(ctx context.Context, req *proto.Upd
 		Status:  "Freelance Approval Pending",
 	})
 	if err != nil {
-		log.Println("Failed to update order status in Gig Service:", err)
+		logger.Log.WithFields(logrus.Fields{
+			"order_id": receiptID,
+		}).Error("Failed to update order status in Gig Service: ", err)
 		return nil, fmt.Errorf("failed to update order status in gig service: %w", err)
 	}
 
+	logger.Log.WithFields(logrus.Fields{
+		"order_id":   req.OrderId,
+		"payment_id": req.PaymentId,
+	}).Info("Payment status updated and order status updated in Gig Service")
 	return &proto.PaymentCommonRes{
 		Message: "Payment Update Successfully",
 		Status:  200,

@@ -5,16 +5,19 @@ import (
 	"time"
 
 	"github.com/MuhammedAshifVnr/Gig_Space/Payment_Svc/pkg/model"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type PaymentRepo struct {
-	DB *gorm.DB
+	DB  *gorm.DB
+	RDB *redis.Client
 }
 
-func NewPaymentRepository(db *gorm.DB) *PaymentRepo {
+func NewPaymentRepository(db *gorm.DB, rdb *redis.Client) *PaymentRepo {
 	return &PaymentRepo{
-		DB: db,
+		DB:  db,
+		RDB: rdb,
 	}
 }
 

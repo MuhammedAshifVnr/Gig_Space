@@ -35,6 +35,18 @@ func main() {
 			log.Fatalf("failed to start Payment consumer: %v", err)
 		}
 	}()
+	ForgotReader := di.NewKafkaConsumer(viper.GetString("Broker"), viper.GetString("ForgotTopic"))
+	go func() {
+		if err := app.StartForgetEmailConsumer(ForgotReader); err != nil {
+			log.Fatalf("failed to start Forgot consumer: %v", err)
+		}
+	}()
+	OfflineReader := di.NewKafkaConsumer(viper.GetString("Broker"), viper.GetString("OfflineTopic"))
+	go func() {
+		if err := app.StartChatNotificationConsumer(OfflineReader); err != nil {
+			log.Fatalf("failed to start CharOffline consumer: %v", err)
+		}
+	}()
 	log.Println("Notification server is running on port ", viper.GetString("Broker"))
 	<-forever
 }

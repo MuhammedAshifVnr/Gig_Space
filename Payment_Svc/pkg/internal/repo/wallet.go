@@ -1,11 +1,16 @@
 package repo
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/MuhammedAshifVnr/Gig_Space/Payment_Svc/pkg/model"
 )
+
+var ctx = context.Background()
 
 func (r *PaymentRepo) CreateWallet(data model.Wallet) error {
 	if err := r.DB.Create(&data).Error; err != nil {
@@ -47,3 +52,26 @@ func (r *PaymentRepo) AddRefundAmount(user_id uint, amount int) error {
 	}
 	return err.Error
 }
+
+func (r *PaymentRepo) UpdatePin(user_id uint, pin string) error {
+	query := `UPDATE wallets SET pin_hash = ? WHERE user_id = ?`
+	return r.DB.Exec(query, pin, user_id).Error
+}
+
+func (r *PaymentRepo) ForgotPinOtp(data model.Wallet, OTP string) error {
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		fmt.Println("====")
+		return err
+	}
+	return r.RDB.Set(ctx, OTP, jsonData, 120*time.Second).Err()
+}
+
+func (r *PaymentRepo) VerifyOtp(otp string) (string, error) {
+	val, err := r.RDB.Get(ctx, otp).Result()
+	if err != nil {
+		return "", err
+	}
+	return val, nil
+}
+

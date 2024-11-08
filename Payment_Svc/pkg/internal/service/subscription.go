@@ -8,9 +8,12 @@ import (
 	"time"
 
 	"github.com/MuhammedAshifVnr/Gig_Space/Payment_Svc/pkg/internal/repo"
+	"github.com/MuhammedAshifVnr/Gig_Space/Payment_Svc/pkg/logger"
 	"github.com/MuhammedAshifVnr/Gig_Space/Payment_Svc/pkg/model"
 	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
 	"github.com/razorpay/razorpay-go"
+	"github.com/segmentio/kafka-go"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -19,15 +22,17 @@ type PaymentService struct {
 	RazorClient *razorpay.Client
 	UserClient  proto.UserServiceClient
 	GigClient   proto.GigServiceClient
+	kafkaWriter map[string]*kafka.Writer
 	proto.UnimplementedPaymentServiceServer
 }
 
-func NewPaymentService(repo repo.RepoInter, UserConn proto.UserServiceClient,GigConn proto.GigServiceClient) *PaymentService {
+func NewPaymentService(repo repo.RepoInter, UserConn proto.UserServiceClient, GigConn proto.GigServiceClient, kafkaWriter map[string]*kafka.Writer) *PaymentService {
 	client := razorpay.NewClient(viper.GetString("ApiKey"), viper.GetString("ApiSecret"))
 	return &PaymentService{
 		UserClient:  UserConn,
 		Repo:        repo,
-		GigClient: GigConn,
+		GigClient:   GigConn,
+		kafkaWriter: kafkaWriter,
 		RazorClient: client,
 	}
 }
@@ -35,7 +40,9 @@ func NewPaymentService(repo repo.RepoInter, UserConn proto.UserServiceClient,Gig
 func (s *PaymentService) CreateSubscription(ctx context.Context, req *proto.CreateSubscriptionRequest) (*proto.CreateSubscriptionResponse, error) {
 	userSub, err := s.Repo.GetActiveSubscription(uint(req.UserId))
 	if err != nil {
-		log.Println("Failed to find sub: ", err.Error())
+		logger.Log.WithFields(logrus.Fields{
+			"user_id": req.UserId,
+		}).Error("Failed to find subscription: ", err)
 		return nil, err
 	}
 	if userSub.ID != 0 && userSub.Active == "Active" {
@@ -44,7 +51,9 @@ func (s *PaymentService) CreateSubscription(ctx context.Context, req *proto.Crea
 
 	plan, err := s.Repo.GetPlanByID(uint(req.PlanId))
 	if err != nil {
-		log.Println("Filed to find the plan: ", err.Error())
+		logger.Log.WithFields(logrus.Fields{
+			"plan_id": req.PlanId,
+		}).Error("Failed to find the plan: ", err)
 		return nil, err
 	}
 
@@ -61,7 +70,10 @@ func (s *PaymentService) CreateSubscription(ctx context.Context, req *proto.Crea
 
 	subscription, err := s.RazorClient.Subscription.Create(subscriptionData, nil)
 	if err != nil {
-		log.Println("Failed to create subscription: ", err)
+		logger.Log.WithFields(logrus.Fields{
+			"plan_id": plan.RazorpayPlanID,
+			"user_id": req.UserId,
+		}).Error("Failed to create subscription: ", err)
 		return nil, err
 	}
 
@@ -73,6 +85,10 @@ func (s *PaymentService) CreateSubscription(ctx context.Context, req *proto.Crea
 		EndDate:        time.Now().AddDate(0, 1, 0),
 	})
 	if err != nil {
+		logger.Log.WithFields(logrus.Fields{
+			"user_id":         req.UserId,
+			"subscription_id": subscription["id"].(string),
+		}).Error("Failed to save subscription in the database: ", err)
 		return nil, err
 	}
 
@@ -83,9 +99,17 @@ func (s *PaymentService) CreateSubscription(ctx context.Context, req *proto.Crea
 		Status:         "pending",
 	})
 	if err != nil {
-		log.Println("Failed to Save Paymetn Data: ", err.Error())
+		logger.Log.WithFields(logrus.Fields{
+			"user_id":         req.UserId,
+			"subscription_id": subscription["id"].(string),
+		}).Error("Failed to save payment data: ", err)
 		return nil, err
 	}
+
+	logger.Log.WithFields(logrus.Fields{
+		"user_id":         req.UserId,
+		"subscription_id": subscription["id"].(string),
+	}).Info("Subscription created and payment data saved successfully")
 
 	return &proto.CreateSubscriptionResponse{
 		Message: "Payment link : " + subscription["short_url"].(string),
@@ -123,24 +147,36 @@ func (s *PaymentService) handlePaymentCaptured(payload map[string]string) (*prot
 
 	err := s.Repo.UpdatePayment(payment)
 	if err != nil {
-		log.Printf("Error updating payment for transaction ID %s: %v", transactionID, err)
+		logger.Log.WithFields(logrus.Fields{
+			"transaction_id": transactionID,
+			"error":          err,
+		}).Error("Failed to update payment")
 		return &proto.WebhookResponse{Success: false, Message: "Failed to update payment"}, nil
 	}
 
 	subscription, err := s.Repo.GetSubscriptionByID(subscriptionID)
 	if err != nil {
-		log.Printf("Error fetching subscription for ID %s: %v", subscriptionID, err)
+		logger.Log.WithFields(logrus.Fields{
+			"subscription_id": subscriptionID,
+			"error":           err,
+		}).Error("Failed to fetch subscription")
 		return &proto.WebhookResponse{Success: false, Message: "Failed to fetch subscription"}, nil
 	}
 
 	subscription.Active = "Active"
 	err = s.Repo.UpdateSubscription(*subscription)
 	if err != nil {
-		log.Printf("Error updating subscription for ID %s: %v", subscriptionID, err)
+		logger.Log.WithFields(logrus.Fields{
+			"subscription_id": subscriptionID,
+			"error":           err,
+		}).Error("Failed to update subscription")
 		return &proto.WebhookResponse{Success: false, Message: "Failed to update subscription"}, nil
 	}
 
-	log.Printf("Payment captured for transaction ID: %s", transactionID)
+	logger.Log.WithFields(logrus.Fields{
+		"transaction_id": transactionID,
+	}).Info("Payment captured and subscription updated successfully")
+
 	return &proto.WebhookResponse{Success: true, Message: "Payment processed successfully"}, nil
 }
 
@@ -150,18 +186,27 @@ func (s *PaymentService) handleSubscriptionCharged(payload map[string]string) (*
 
 	subscription, err := s.Repo.GetSubscriptionByID(subscriptionID)
 	if err != nil {
-		log.Printf("Error fetching subscription for ID %s: %v", subscriptionID, err)
+		logger.Log.WithFields(logrus.Fields{
+			"subscription_id": subscriptionID,
+			"error":           err,
+		}).Error("Failed to fetch subscription")
 		return &proto.WebhookResponse{Success: false, Message: "Failed to fetch subscription"}, nil
 	}
 
 	subscription.Active = "Charged"
 	err = s.Repo.UpdateSubscription(*subscription)
 	if err != nil {
-		log.Printf("Error updating subscription for ID %s: %v", subscriptionID, err)
+		logger.Log.WithFields(logrus.Fields{
+			"subscription_id": subscriptionID,
+			"error":           err,
+		}).Error("Failed to update subscription")
 		return &proto.WebhookResponse{Success: false, Message: "Failed to update subscription"}, nil
 	}
 
-	log.Printf("Subscription charged: %s, Amount: %s", subscriptionID, amount)
+	logger.Log.WithFields(logrus.Fields{
+		"subscription_id": subscriptionID,
+		"amount":          amount,
+	}).Info("Subscription charged successfully")
 	return &proto.WebhookResponse{Success: true, Message: "Subscription charged successfully"}, nil
 }
 
@@ -170,17 +215,25 @@ func (s *PaymentService) handleSubscriptionCancelled(payload map[string]string) 
 
 	subscription, err := s.Repo.GetSubscriptionByID(subscriptionID)
 	if err != nil {
-		log.Printf("Error fetching subscription for ID %s: %v", subscriptionID, err)
+		logger.Log.WithFields(logrus.Fields{
+			"subscription_id": subscriptionID,
+			"error":           err,
+		}).Error("Failed to fetch subscription")
 		return &proto.WebhookResponse{Success: false, Message: "Failed to fetch subscription"}, nil
 	}
 
 	subscription.Active = "Cancelled"
 	err = s.Repo.UpdateSubscription(*subscription)
 	if err != nil {
-		log.Printf("Error updating subscription for ID %s: %v", subscriptionID, err)
+		logger.Log.WithFields(logrus.Fields{
+			"subscription_id": subscriptionID,
+			"error":           err,
+		}).Error("Failed to update subscription")
 		return &proto.WebhookResponse{Success: false, Message: "Failed to update subscription"}, nil
 	}
 
-	log.Printf("Subscription cancelled: %s", subscriptionID)
+	logger.Log.WithFields(logrus.Fields{
+		"subscription_id": subscriptionID,
+	}).Info("Subscription cancelled successfully")
 	return &proto.WebhookResponse{Success: true, Message: "Subscription cancelled successfully"}, nil
 }

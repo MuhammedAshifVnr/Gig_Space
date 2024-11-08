@@ -288,7 +288,7 @@ func (s *GigService) ClientUpdatePendingStatus(ctx context.Context, req *proto.O
 			return nil, err
 		}
 	}
-	if err := s.SendNotification(ctx, RefundEvent{
+	if err := s.SendNotification(ctx, StatusEvent{
 		OrderID: req.OrderId,
 		Event:   "Pending",
 	}, viper.GetString("StatusTopic")); err != nil {

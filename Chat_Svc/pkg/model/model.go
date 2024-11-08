@@ -8,3 +8,9 @@ type Message struct {
 	MessageText string
 	CreatedAt   time.Time
 }
+
+type ChatEvent struct {
+	SenderID    int32
+	RecipientID int32
+	Event       string
+}

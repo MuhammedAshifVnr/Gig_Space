@@ -9,21 +9,22 @@ import (
 
 	"github.com/MuhammedAshifVnr/Gig_Space/Chat_Svc/pkg/model"
 	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
+	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type ChatRepo struct {
-	DB *mongo.Collection
+	DB  *mongo.Collection
+	RDB *redis.Client
 }
 
-func NewChatRepository(conn *mongo.Collection) *ChatRepo {
-	return &ChatRepo{DB: conn}
+func NewChatRepository(conn *mongo.Collection, RedisConn *redis.Client) *ChatRepo {
+	return &ChatRepo{DB: conn, RDB: RedisConn}
 }
 
 func (r *ChatRepo) SaveMessages(msg []byte) error {
-	fmt.Println("====")
 	var message model.Message
 	err := json.Unmarshal(msg, &message)
 	if err != nil {
@@ -72,4 +73,22 @@ func (r *ChatRepo) GetMessages(senderID, recipientID uint32) ([]*proto.Message, 
 	}
 
 	return messages, nil
+}
+
+func (r *ChatRepo) StoreNotification(senderID, recipientID int32) bool {
+	ctx := context.Background()
+	key := fmt.Sprintf("notify:%d:%d", senderID, recipientID)
+
+	exists, err := r.RDB.Exists(ctx, key).Result()
+	if err != nil {
+		fmt.Println("Error accessing Redis:", err)
+		return false
+	}
+
+	if exists == 0 {
+		r.RDB.Set(ctx, key, "1", time.Hour)
+		return true
+	}
+
+	return false
 }

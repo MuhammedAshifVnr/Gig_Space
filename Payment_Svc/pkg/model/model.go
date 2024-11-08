@@ -54,3 +54,9 @@ type Wallet struct {
 	Fund_account_id     string
 	Last_transaction_at time.Time
 }
+
+type ForgotEvent struct{
+	Otp string
+	Email string
+	Event string
+}

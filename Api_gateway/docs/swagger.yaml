@@ -794,6 +794,34 @@ paths:
       summary: Get Wallet Information
       tags:
       - Wallet
+  /payments/wallet/change-pin:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Allows the user to change their wallet PIN by providing the current
+        PIN and a new PIN.
+      parameters:
+      - description: Current PIN
+        in: formData
+        name: current_pin
+        required: true
+        type: integer
+      - description: New PIN
+        in: formData
+        name: new_pin1
+        required: true
+        type: integer
+      - description: Confirm New PIN
+        in: formData
+        name: new_pin2
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Change Wallet PIN
+      tags:
+      - Wallet
   /payments/wallet/create:
     post:
       consumes:
@@ -814,6 +842,45 @@ paths:
       - application/json
       responses: {}
       summary: Create a new wallet for the user
+      tags:
+      - Wallet
+  /payments/wallet/forgot-pin:
+    post:
+      consumes:
+      - application/json
+      description: Generates and sends an OTP to the user's registered email to reset
+        their wallet PIN.
+      produces:
+      - application/json
+      responses: {}
+      summary: Request OTP for resetting wallet PIN
+      tags:
+      - Wallet
+  /payments/wallet/reset-pin:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Resets the wallet PIN for the user after OTP verification
+      parameters:
+      - description: One-Time Password (OTP)
+        in: formData
+        name: OTP
+        required: true
+        type: string
+      - description: New PIN
+        in: formData
+        name: new_pin1
+        required: true
+        type: integer
+      - description: Confirm New PIN
+        in: formData
+        name: new_pin2
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Reset Wallet PIN
       tags:
       - Wallet
   /payments/withdrawal:

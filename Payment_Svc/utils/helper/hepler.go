@@ -2,11 +2,13 @@ package helper
 
 import (
 	"bytes"
-	"crypto/rand"
+	"time"
+
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 
 	"github.com/razorpay/razorpay-go"
@@ -40,7 +42,7 @@ func AddFundAccount(contactID string, bankAccount map[string]interface{}) (strin
 	}
 
 	body, err := client.FundAccount.Create(fundAccountData, nil)
-	
+
 	if err != nil {
 		return "", err
 	}
@@ -148,4 +150,9 @@ func Payout(payoutData map[string]interface{}) (string, error) {
 	}
 
 	return payoutID, nil
+}
+
+func GenerateOtp() string {
+	rand.Seed(time.Now().UnixNano())
+	return fmt.Sprintf("%06d", rand.Intn(1000000))
 }
