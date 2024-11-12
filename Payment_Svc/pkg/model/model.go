@@ -60,3 +60,9 @@ type ForgotEvent struct{
 	Email string
 	Event string
 }
+
+type StatusEvent struct{
+	OrderID string
+	User_id uint
+	Event   string
+}

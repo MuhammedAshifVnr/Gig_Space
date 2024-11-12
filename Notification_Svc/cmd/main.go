@@ -23,30 +23,42 @@ func main() {
 			log.Fatalf("failed to start Refund consumer: %v", err)
 		}
 	}()
+
 	StatusReader := di.NewKafkaConsumer(viper.GetString("Broker"), viper.GetString("StatusTopic"))
 	go func() {
 		if err := app.StartStatusConsumer(StatusReader); err != nil {
 			log.Fatalf("failed to start Status	 consumer: %v", err)
 		}
 	}()
+
 	PaymentReader := di.NewKafkaConsumer(viper.GetString("Broker"), viper.GetString("PaymentTopic"))
 	go func() {
 		if err := app.StartStatusConsumer(PaymentReader); err != nil {
 			log.Fatalf("failed to start Payment consumer: %v", err)
 		}
 	}()
+
 	ForgotReader := di.NewKafkaConsumer(viper.GetString("Broker"), viper.GetString("ForgotTopic"))
 	go func() {
 		if err := app.StartForgetEmailConsumer(ForgotReader); err != nil {
 			log.Fatalf("failed to start Forgot consumer: %v", err)
 		}
 	}()
+
 	OfflineReader := di.NewKafkaConsumer(viper.GetString("Broker"), viper.GetString("OfflineTopic"))
 	go func() {
 		if err := app.StartChatNotificationConsumer(OfflineReader); err != nil {
 			log.Fatalf("failed to start CharOffline consumer: %v", err)
 		}
 	}()
+
+	OrderReader := di.NewKafkaConsumer(viper.GetString("Broker"), viper.GetString("OrderTopic"))
+	go func() {
+		if err := app.StartChatNotificationConsumer(OrderReader); err != nil {
+			log.Fatalf("failed to start Order consumer: %v", err)
+		}
+	}()
+	
 	log.Println("Notification server is running on port ", viper.GetString("Broker"))
 	<-forever
 }

@@ -9,6 +9,7 @@ type RefundEvent struct {
 
 type StatusEvent struct{
 	OrderID string
+	User_id uint
 	Event   string
 }
 
@@ -22,4 +23,9 @@ type ChatEvent struct{
 	SenderID    int32
 	RecipientID int32
 	Event       string
+}
+
+type OrderEvent struct{
+	OrderID string
+	Event string
 }

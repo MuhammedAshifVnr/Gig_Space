@@ -131,7 +131,7 @@ func StartChatNotificationConsumer(consumer *kafka.Reader) error {
 		email, err := helper.GetUserEmail(uint(event.RecipientID))
 		if err != nil {
 			log.Printf("Failed to find email: %v", err)
-			continue 
+			continue
 		}
 		if email == "" {
 			log.Printf("Email not found for recipient ID: %d", event.RecipientID)
@@ -140,12 +140,12 @@ func StartChatNotificationConsumer(consumer *kafka.Reader) error {
 
 		name, err := helper.GetUserProfile(uint(event.SenderID))
 		if err != nil {
-		    log.Printf("Failed to find user profile: %v", err)
-		    continue
+			log.Printf("Failed to find user profile: %v", err)
+			continue
 		}
 		if name == "" {
-		    log.Printf("User name not found for sender ID: %d", event.SenderID)
-		    continue
+			log.Printf("User name not found for sender ID: %d", event.SenderID)
+			continue
 		}
 
 		// Prepare and send email notification
@@ -154,6 +154,31 @@ func StartChatNotificationConsumer(consumer *kafka.Reader) error {
 			log.Printf("Failed to send email notification: %v", err)
 		} else {
 			log.Printf("Notification sent to user: %s", email)
+		}
+	}
+}
+
+func StartOrderNotificationConsumer(consumer *kafka.Reader) error {
+	for {
+		msg, err := consumer.ReadMessage(context.Background())
+		if err != nil {
+			return err
+		}
+
+		var event models.OrderEvent
+		if err := json.Unmarshal(msg.Value, &event); err != nil {
+			log.Printf("failed to unmarshal order message: %v", err)
+			continue
+		}
+		order, err := helper.GetOrderDetails(event.OrderID)
+		if err != nil {
+			log.Printf("failed to find Order: %v", err)
+		}
+		sub, body, email := helper.OrderMessages(order, event.Event)
+		if err := helper.SendEmailNotification(email, sub, body); err != nil {
+			log.Printf("failed to send order confirmation: %v", err)
+		} else {
+			log.Printf("order confirmation sent to user: %v", event.OrderID)
 		}
 	}
 }

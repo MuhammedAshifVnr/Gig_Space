@@ -34,3 +34,10 @@ func GetUserProfile(userID uint) (string, error) {
 	})
 	return res.Firstname + " " + res.Lastname, err
 }
+
+func GetOrderDetails(orderID string)(*proto.OrderDetail,error){
+	res,err:=client.NewGigClinet().GetOrderByID(context.Background(),&proto.OrderByIDReq{
+		OrderId: orderID,
+	})
+	return res,err
+}

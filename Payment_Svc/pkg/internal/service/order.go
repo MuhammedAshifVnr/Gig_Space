@@ -6,9 +6,11 @@ import (
 
 	"github.com/MuhammedAshifVnr/Gig_Space/Payment_Svc/pkg/logger"
 	"github.com/MuhammedAshifVnr/Gig_Space/Payment_Svc/pkg/model"
+	"github.com/MuhammedAshifVnr/Gig_Space/Payment_Svc/utils/notification"
 	"github.com/MuhammedAshifVnr/Gig_Space/Payment_Svc/utils/payment"
 	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 func (s *PaymentService) CreatePaymentOrder(ctx context.Context, req *proto.CreatePaymentOrderReq) (*proto.PaymentCommonRes, error) {
@@ -80,6 +82,25 @@ func (s *PaymentService) UpdatePaymentStatus(ctx context.Context, req *proto.Upd
 			"order_id": receiptID,
 		}).Error("Failed to update order status in Gig Service: ", err)
 		return nil, fmt.Errorf("failed to update order status in gig service: %w", err)
+	}
+
+	OrderTopic := viper.GetString("OrderTopic")
+	writer, ok := s.kafkaWriter[OrderTopic]
+	if ok {
+		err = notification.SendNotification(ctx, writer, model.StatusEvent{
+			OrderID: receiptID,
+			Event:   "OrderReceived",
+		}, OrderTopic)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"order_id": receiptID,
+			}).Errorf("failed to publish notification: %v", err)
+			return nil, fmt.Errorf("failed to publish notification: %w", err)
+		}
+	} else {
+		logrus.WithFields(logrus.Fields{
+			"topic": "OrderReceived",
+		}).Warn("Kafka writer not found for forgot pin topic")
 	}
 
 	logger.Log.WithFields(logrus.Fields{

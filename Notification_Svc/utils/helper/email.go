@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/smtp"
 
+	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
 	"github.com/spf13/viper"
 )
 
@@ -80,4 +81,25 @@ func OfflineMessage(senderName string) (string, string) {
 			"Best regards,\n\nGig Space Team", senderName)
 
 	return subject, message
+}
+
+func OrderMessages(Order *proto.OrderDetail, topic string) (string, string, string) {
+	var subject, message, email string
+	switch topic {
+	case "OrderReceived":
+		email, _ = GetUserEmail(uint(Order.FrelancerId))
+		subject = "You Have a New Order - Action Required"
+		message = fmt.Sprintf(
+			"Hello,\n\n"+
+				"We’re excited to inform you that you have received a new order! Here are the order details:\n\n"+
+				"Order ID: %s\n\n"+
+				"Please take a moment to review the order. Once you’ve checked all the requirements, you can choose to either accept or reject the order based on your availability and preferences.\n\n"+
+				"**To Accept the Order**: Log in to your account, review the order details, and click 'Accept'.\n"+
+				"**To Reject the Order**: If you are unable to fulfill this order, you may click 'Reject' to notify the client.\n\n"+
+				"Note: Accepting the order means you agree to meet the agreed delivery timeline and project scope.\n\n"+
+				"Thank you for using Gig Space. We're here to support your success every step of the way.\n\n"+
+				"Best regards,\n"+
+				"The Gig Space Team", Order.OrderId)
+	}
+	return subject, message, email
 }
