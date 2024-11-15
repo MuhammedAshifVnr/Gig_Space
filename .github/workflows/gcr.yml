@@ -1,40 +1,35 @@
-name: Build and Push to GCR
+name: Build and Push Docker Image to GCR
 
 on:
   push:
     branches:
-      - main  # Adjust to your main branch
+      - main  # Trigger on push to the main branch
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+    # Checkout the code
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-      # Step 2: List files (for debugging)
-      - name: List files
-        run: ls -R
+    # Set up Google Cloud SDK
+    - name: Set up Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+        export_default_credentials: true
 
-      # Step 3: Set up Google Cloud SDK
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
+    # Authenticate Docker to use GCR
+    - name: Authenticate Docker with GCR
+      run: gcloud auth configure-docker --quiet
 
-      # Step 4: Authenticate Docker to GCR
-      - name: Authenticate Docker to GCR
-        run: |
-          gcloud auth configure-docker
+    # Build the Docker image
+    - name: Build Docker Image
+      run: docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/api_gateway:latest ./api_gateway
 
-      # Step 5: Build and Push API Gateway Docker Image
-      - name: Build and Push API Gateway Image
-        run: |
-          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/api-gateway:latest -f api_gateway/Dockerfile
-          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/api-gateway:latest
-
+    # Push the Docker image to GCR
+    - name: Push Docker Image to GCR
+      run: docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/api_gateway:latest
