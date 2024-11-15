@@ -16,7 +16,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Step 2: Confirm Directory Structure
+      # Step 2: List files (for debugging)
       - name: List files
         run: ls -R
 
@@ -32,12 +32,9 @@ jobs:
         run: |
           gcloud auth configure-docker
 
-      # Step 5: Build Docker Image
-      - name: Build Docker image
+      # Step 5: Build and Push API Gateway Docker Image
+      - name: Build and Push API Gateway Image
         run: |
           docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/api-gateway:latest -f api_gateway/Dockerfile api_gateway
-
-      # Step 6: Push Docker Image to GCR
-      - name: Push Docker image to GCR
-        run: |
           docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/api-gateway:latest
+
