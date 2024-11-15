@@ -1,4 +1,4 @@
-name: Build and Push Docker Image to GCR
+name: Build and Push Docker Image to Artifact Registry
 
 on:
   push:
@@ -20,20 +20,20 @@ jobs:
       with:
         credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-    # Set up Google Cloud SDK  
+    # Set up Google Cloud SDK
     - name: Set up Google Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
       with:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-    # Authenticate Docker to use GCR
-    - name: Configure Docker for GCR
-      run: gcloud auth configure-docker --quiet
+    # Authenticate Docker to use Artifact Registry
+    - name: Configure Docker for Artifact Registry
+      run: gcloud auth configure-docker us-central1-docker.pkg.dev
 
     # Build the Docker image
     - name: Build Docker Image
-      run: docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/api-gateway-svc:latest ./Api_gateway
+      run: docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/api-gateway-svc/api-gateway:latest ./Api_gateway
 
-    # Push the Docker image to GCR
-    - name: Push Docker Image to GCR
-      run: docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/api-gateway-svc:latest
+    # Push the Docker image to Artifact Registry
+    - name: Push Docker Image to Artifact Registry
+      run: docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/api-gateway-svc/api-gateway:latest
