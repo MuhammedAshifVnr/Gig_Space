@@ -1,0 +1,37 @@
+name: Build and Push to GCR
+
+on:
+  push:
+    branches:
+      - main  # Adjust to your main branch
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up Google Cloud CLI
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      # Step 3: Authenticate Docker to GCR
+      - name: Authenticate Docker to GCR
+        run: |
+          gcloud auth configure-docker
+
+      # Step 4: Build Docker Image
+      - name: Build Docker image
+        run: |
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/api-gateway:latest .
+
+      # Step 5: Push Docker Image to GCR
+      - name: Push Docker image to GCR
+        run: |
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/api-gateway:latest
