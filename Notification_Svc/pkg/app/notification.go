@@ -160,6 +160,7 @@ func StartChatNotificationConsumer(consumer *kafka.Reader) error {
 
 func StartOrderNotificationConsumer(consumer *kafka.Reader) error {
 	for {
+		fmt.Println("-=-=-=")
 		msg, err := consumer.ReadMessage(context.Background())
 		if err != nil {
 			return err
@@ -171,10 +172,12 @@ func StartOrderNotificationConsumer(consumer *kafka.Reader) error {
 			continue
 		}
 		order, err := helper.GetOrderDetails(event.OrderID)
+		fmt.Println("Order = ",order)
 		if err != nil {
 			log.Printf("failed to find Order: %v", err)
 		}
 		sub, body, email := helper.OrderMessages(order, event.Event)
+		fmt.Println("=====")
 		if err := helper.SendEmailNotification(email, sub, body); err != nil {
 			log.Printf("failed to send order confirmation: %v", err)
 		} else {

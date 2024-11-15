@@ -159,9 +159,11 @@ func (h *PaymentHandler) CreateWallet(c *fiber.Ctx) error {
 // @Param Pin formData string true "User's wallet PIN"
 // @Router /payments/wallet [post]
 func (h *PaymentHandler) GetWallet(c *fiber.Ctx) error {
-	pin := c.FormValue("Pin")
+	pin, err := helper.GetRequiredFormValue(c, "Pin")
+	if err != nil {
+		return err
+	}
 	userID, _ := c.Locals("userID").(uint)
-	fmt.Println("user :", userID, "passw:", pin)
 	res, err := h.PaymentClient.GetWallet(context.Background(), &proto.GetwalletReq{
 		UserId: uint32(userID),
 		Pin:    pin,
@@ -189,16 +191,24 @@ func (h *PaymentHandler) GetWallet(c *fiber.Ctx) error {
 // @Router /payments/bank [post]
 func (h *PaymentHandler) AddBankAccount(c *fiber.Ctx) error {
 	userID, _ := c.Locals("userID").(uint)
-	Account1 := c.FormValue("Account1")
+	Account1, err := helper.GetRequiredFormValue(c, "Account1")
+	if err != nil {
+		return err
+	}
 	Account2 := c.FormValue("Account2")
 	if Account1 != Account2 {
 		return c.Status(404).JSON(fiber.Map{
 			"error": "Account numbers do not match",
 		})
 	}
-	Ifsc := c.FormValue("IFSC")
-	name := c.FormValue("Name")
-	fmt.Println("name : ", name, "Account: ", Account1)
+	Ifsc, err := helper.GetRequiredFormValue(c, "IFSC")
+	if err != nil {
+		return err
+	}
+	name, err := helper.GetRequiredFormValue(c, "Name")
+	if err != nil {
+		return err
+	}
 	res, err := h.PaymentClient.CreateBankAccount(context.Background(), &proto.CreaBankReq{
 		UserId:        uint32(userID),
 		Ifsc:          Ifsc,
@@ -222,11 +232,9 @@ func (h *PaymentHandler) AddBankAccount(c *fiber.Ctx) error {
 // @Param Amount formData number true "Amount to withdraw"
 // @Router /payments/withdrawal [post]
 func (h *PaymentHandler) Withdrawal(c *fiber.Ctx) error {
-	pin := c.FormValue("Pin")
-	if pin == "" {
-		return c.Status(400).JSON(fiber.Map{
-			"error": "Pin is required",
-		})
+	pin, err := helper.GetRequiredFormValue(c, "Pin")
+	if err != nil {
+		return err
 	}
 
 	amountStr := c.FormValue("Amount")
@@ -330,7 +338,10 @@ func (h *PaymentHandler) ForgotWalletPin(c *fiber.Ctx) error {
 // @Param new_pin2 formData int true "Confirm New PIN"
 // @Router /payments/wallet/reset-pin [post]
 func (h *PaymentHandler) ResetWalletPin(c *fiber.Ctx) error {
-	otp := c.FormValue("OTP")
+	otp, err := helper.GetRequiredFormValue(c, "OTP")
+	if err != nil {
+		return err
+	}
 	newPin1, err := strconv.Atoi(c.FormValue("new_pin1"))
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "Invalid format for new PIN"})

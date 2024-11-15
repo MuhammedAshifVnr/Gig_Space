@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  api_gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env  # Load .env file from project root
+    ports:
+      - "8081:8081"

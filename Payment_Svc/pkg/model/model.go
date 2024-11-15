@@ -66,3 +66,8 @@ type StatusEvent struct{
 	User_id uint
 	Event   string
 }
+
+type OrderEvent struct{
+	OrderID string
+	Event string
+}

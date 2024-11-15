@@ -3,17 +3,17 @@ package helper
 import "time"
 
 type SignupData struct {
-	Firstname string `json:"firstname"`
-	Lastname  string `json:"lastname"`
-	Email     string `json:"useremail"`
-	Password  string `json:"userpassword"`
-	Country   string `json:"country"`
-	Phone     string `json:"phone"`
+	Firstname string `json:"firstname" validate:"required,alpha,min=4,max=50"`
+	Lastname  string `json:"lastname" validate:"required,alpha,min=4,max=50"`
+	Email     string `json:"useremail" validate:"required,email"`
+	Password  string `json:"userpassword" validate:"required,min=6"`
+	Country   string `json:"country" validate:"required,alpha"`
+	Phone     string `json:"phone" validate:"required,numeric,len=10"` 
 }
 
 type LoginData struct {
-	Email    string `json:"useremail"`
-	Password string `json:"userpassword"`
+	Email    string `json:"useremail" validate:"required,email"`
+	Password string `json:"userpassword" validate:"required,min=4"`
 }
 
 type ADLogin struct {

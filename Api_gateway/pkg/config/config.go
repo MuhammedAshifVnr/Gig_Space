@@ -17,4 +17,3 @@ func LoadConfig() error {
 	viper.AutomaticEnv()
 	return nil
 }
-

@@ -100,6 +100,35 @@ func OrderMessages(Order *proto.OrderDetail, topic string) (string, string, stri
 				"Thank you for using Gig Space. We're here to support your success every step of the way.\n\n"+
 				"Best regards,\n"+
 				"The Gig Space Team", Order.OrderId)
+	case "OrderAccepted":
+		email, _ = GetUserEmail(uint(Order.ClientId))
+		freelancerName, _ := GetUserProfile(uint(Order.FrelancerId))
+		subject = "Your Order Has Been Accepted!"
+		message = fmt.Sprintf(
+			"Hello,\n\n"+
+				"Good news! Your order has been accepted by %s. Here are the details:\n\n"+
+				"Order ID: %s\n\n"+
+				"%s has confirmed the order and will begin working on it shortly. You can expect regular updates on the progress as they work to complete your project.\n\n"+
+				"**Next Steps**:\n"+
+				"Feel free to communicate any additional details or requirements with %s through the chat system, if needed. Otherwise, sit back and relax while your project is underway!\n\n"+
+				"Thank you for choosing Gig Space. We're excited to be a part of your project.\n\n"+
+				"Best regards,\n"+
+				"The Gig Space Team", freelancerName, Order.OrderId, freelancerName, freelancerName)
+	case "OrderRejection":
+		email, _ = GetUserEmail(uint(Order.ClientId))
+		freelancerName, _ := GetUserProfile(uint(Order.FrelancerId))
+		subject = "Update on Your Order Request"
+		message = fmt.Sprintf(
+			"Hello,\n\n"+
+				"We wanted to inform you that your recent order request has been declined by %s. Here are the details:\n\n"+
+				"Order ID: %s\n\n"+
+				"Unfortunately, %s was unable to accept the order at this time. We understand that this may be disappointing, and we apologize for any inconvenience.\n\n"+
+				"**Next Steps**:\n"+
+				"You may consider reaching out to other freelancers available on our platform to fulfill your requirements. Feel free to explore profiles and contact other professionals who can help with your project.\n\n"+
+				"Our team is here to support you in finding the right match for your needs.\n\n"+
+				"Thank you for choosing Gig Space. We appreciate your understanding and look forward to helping you complete your project.\n\n"+
+				"Best regards,\n"+
+				"The Gig Space Team", freelancerName, Order.OrderId, freelancerName)
 	}
 	return subject, message, email
 }

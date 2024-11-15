@@ -234,12 +234,18 @@ func (h *UserHandler) UserBlock(c *fiber.Ctx) error {
 // @Param period query string true "Period of the plan" Enums(monthly, yearly)
 // @Router /admin/create-plan [post]
 func (h *PaymentHandler) CreatePlan(c *fiber.Ctx) error {
-	Name := c.FormValue("name")
+	Name, err := helper.GetRequiredFormValue(c, "name")
+	if err != nil {
+		return err
+	}
 	Price, _ := strconv.Atoi(c.FormValue("price"))
-	Period := c.FormValue("period")
+	Period, err := helper.GetRequiredFormValue(c, "period")
+	if err != nil {
+		return err
+	}
 
-	if Name == "" || Price == 0 || Period == "" {
-		return c.Status(400).JSON("eroor")
+	if Price == 0 {
+		return c.Status(400).JSON("Price Formate Invalid")
 	}
 	res, err := h.PaymentClient.CreatePlan(context.Background(), &proto.CreatePlanReq{
 		Name:     Name,

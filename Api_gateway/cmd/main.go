@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	_"github.com/MuhammedAshifVnr/Gig_Space/api_gateway/docs"
+	_ "github.com/MuhammedAshifVnr/Gig_Space/api_gateway/docs"
 	"github.com/MuhammedAshifVnr/Gig_Space/api_gateway/pkg/config"
 	"github.com/MuhammedAshifVnr/Gig_Space/api_gateway/pkg/di"
 	"github.com/gofiber/fiber/v2"
@@ -34,19 +34,18 @@ func main() {
 	}))
 
 	app.Get("/", func(c *fiber.Ctx) error {
-        // Render the HTML file from the 'views' folder
-		fmt.Println("//")
-        return c.Render("temp/payment.html", fiber.Map{
-            "Title": "Fiber HTML Example",
-        })
-    })
+		// Render the HTML file from the 'views' folder
+		return c.Render("temp/payment.html", fiber.Map{
+			"Title": "Fiber HTML Example",
+		})
+	})
 
 	app.Get("/swagger/*", swagger.HandlerDefault)
 	app.Static("/temp", "./temp")
 	di.InitializeRoutes(app)
-
+	fmt.Println("Port", viper.GetString("PORT"))
 	if err := app.Listen(viper.GetString("PORT")); err != nil {
-		fmt.Println("stoped")
+		fmt.Println("stoped", err)
 	}
 
 }

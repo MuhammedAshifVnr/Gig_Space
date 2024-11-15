@@ -24,7 +24,7 @@ func (s *PaymentService) CreatePlan(ctx context.Context, req *proto.CreatePlanRe
 
 	plan, err := s.RazorClient.Plan.Create(planData, nil)
 	if err != nil {
-		logger.Log.WithFields(logrus.Fields{
+		s.Log.WithFields(logrus.Fields{
 			"plan_name": req.Name,
 			"amount":    req.Amount,
 		}).Error("Failed to create plan via Razorpay SDK: ", err)
@@ -39,14 +39,14 @@ func (s *PaymentService) CreatePlan(ctx context.Context, req *proto.CreatePlanRe
 		Interval:       int(req.Interval),
 	})
 	if err != nil {
-		logger.Log.WithFields(logrus.Fields{
+		s.Log.WithFields(logrus.Fields{
 			"plan_name":        req.Name,
 			"razorpay_plan_id": plan["id"].(string),
 		}).Error("Failed to save plan in the database: ", err)
 		return nil, err
 	}
 
-	logger.Log.WithFields(logrus.Fields{
+	s.Log.WithFields(logrus.Fields{
 		"plan_name":        req.Name,
 		"razorpay_plan_id": plan["id"].(string),
 	}).Info("Plan created and saved successfully")
@@ -72,13 +72,13 @@ func (s *PaymentService) GetPlan(ctx context.Context, req *proto.EmptyReq) (*pro
 func (s *PaymentService) DeletePlan(ctx context.Context, req *proto.DeletePlanReq) (*proto.PaymentCommonRes, error) {
 	err := s.Repo.DeletePlan(req.PlanId)
 	if err != nil {
-		logger.Log.WithFields(logrus.Fields{
+		s.Log.WithFields(logrus.Fields{
 			"plan_id": req.PlanId,
 		}).Error("Failed to delete plan: ", err)
 		return nil, err
 	}
 
-	logger.Log.WithFields(logrus.Fields{
+	s.Log.WithFields(logrus.Fields{
 		"plan_id": req.PlanId,
 	}).Info("Plan deleted successfully")
 

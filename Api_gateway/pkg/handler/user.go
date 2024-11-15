@@ -42,13 +42,21 @@ func (h *UserHandler) Signup(c *fiber.Ctx) error {
 			"error": "cannot parse JSON",
 		})
 	}
+
+	if validationErrors, err := helper.ValidateRequest(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":  "validation failed",
+			"fields": validationErrors,
+		})
+	}
+
 	hashPassword, err := helper.HashPassword(req.Password)
 	if err != nil {
 		return c.Status(404).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
-	// Call the gRPC service to sign up the user
+
 	resp, err := h.userClient.UserSignup(context.Background(), &proto.SignupReq{
 		Firstname: req.Firstname,
 		Lastname:  req.Lastname,
@@ -96,6 +104,13 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 			"error": "cannot parse JSON",
 		})
 	}
+	if validationErrors, err := helper.ValidateRequest(&credentials); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":  "validation failed",
+			"fields": validationErrors,
+		})
+	}
+
 	res, err := h.userClient.Login(context.Background(), &proto.LoginReq{
 		Email:    credentials.Email,
 		Password: credentials.Password,
@@ -124,7 +139,11 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 // @Param proficency formData int true "Proficiency level" example 5
 // @Router /user/skills [post]
 func (h *UserHandler) FreeAddSkills(c *fiber.Ctx) error {
-	skill := c.FormValue("skillName")
+	skill, err := helper.GetRequiredFormValue(c, "skillName")
+	fmt.Println("Skill", skill)
+	if err != nil {
+		return err
+	}
 	proficency := c.FormValue("proficency")
 	userIDLocal := c.Locals("userID")
 	userid, ok := userIDLocal.(uint)
@@ -157,8 +176,14 @@ func (h *UserHandler) FreeAddSkills(c *fiber.Ctx) error {
 // @Param        Title  formData  string  true  "User title"
 // @Router       /user/profile [put]
 func (h *UserHandler) UpdateProfile(c *fiber.Ctx) error {
-	bio := c.FormValue("Bio")
-	title := c.FormValue("Title")
+	bio, err := helper.GetRequiredFormValue(c, "Bio")
+	if err != nil {
+		return err
+	}
+	title, err := helper.GetRequiredFormValue(c, "Title")
+	if err != nil {
+		return err
+	}
 	userIDLocal := c.Locals("userID")
 	userid, ok := userIDLocal.(uint)
 	if !ok {
@@ -286,7 +311,10 @@ func (h *UserHandler) UploadProfilePhoto(c *fiber.Ctx) error {
 // @Param email formData string true "User Email"
 // @Router /user/forgot-password [post]
 func (h *UserHandler) ForgotPasswordReq(c *fiber.Ctx) error {
-	email := c.FormValue("email")
+	email, err := helper.GetRequiredFormValue(c, "email")
+	if err != nil {
+		return err
+	}
 	res, err := h.userClient.ForgotPassword(context.Background(), &proto.FP_Req{
 		Email: email,
 	})
@@ -308,9 +336,18 @@ func (h *UserHandler) ForgotPasswordReq(c *fiber.Ctx) error {
 // @Param pwd2 formData string true "Confirm new password"
 // @Router /user/reset-password [post]
 func (h *UserHandler) ResetPassword(c *fiber.Ctx) error {
-	otp := c.FormValue("otp")
-	pwd1 := c.FormValue("pwd1")
-	pwd2 := c.FormValue("pwd2")
+	otp, err := helper.GetRequiredFormValue(c, "otp")
+	if err != nil {
+		return err
+	}
+	pwd1, err := helper.GetRequiredFormValue(c, "pwd1")
+	if err != nil {
+		return err
+	}
+	pwd2, err := helper.GetRequiredFormValue(c, "pwd2")
+	if err != nil {
+		return err
+	}
 	if pwd1 != pwd2 {
 		return c.Status(400).JSON(fiber.Map{
 			"error": "Password Doesn't Match.",
@@ -342,9 +379,18 @@ func (h *UserHandler) ResetPassword(c *fiber.Ctx) error {
 // @Param state formData string false "State"
 // @Router /user/address [post]
 func (h *UserHandler) UpdateAddress(c *fiber.Ctx) error {
-	city := c.FormValue("city")
-	district := c.FormValue("district")
-	state := c.FormValue("state")
+	city, err := helper.GetRequiredFormValue(c, "city")
+	if err != nil {
+		return err
+	}
+	district, err := helper.GetRequiredFormValue(c, "district")
+	if err != nil {
+		return err
+	}
+	state, err := helper.GetRequiredFormValue(c, "state")
+	if err != nil {
+		return err
+	}
 	userid, ok := c.Locals("userID").(uint)
 	fmt.Println("userid= ", userid)
 	if !ok {

@@ -87,7 +87,7 @@ func (s *PaymentService) UpdatePaymentStatus(ctx context.Context, req *proto.Upd
 	OrderTopic := viper.GetString("OrderTopic")
 	writer, ok := s.kafkaWriter[OrderTopic]
 	if ok {
-		err = notification.SendNotification(ctx, writer, model.StatusEvent{
+		err = notification.SendNotification(ctx, writer, model.OrderEvent{
 			OrderID: receiptID,
 			Event:   "OrderReceived",
 		}, OrderTopic)

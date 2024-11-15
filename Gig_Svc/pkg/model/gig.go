@@ -62,3 +62,7 @@ type CustomOrder struct {
 	Amount       int
 }
 
+type OrderEvent struct{
+	OrderID string
+	Event string
+}

@@ -1,0 +1,16 @@
+time="2024-11-14 12:22:17" level=info msg="Starting application..."
+time="2024-11-14 12:22:17" level=info msg="Configuration loaded successfully"
+time="2024-11-14 12:22:17" level=info msg="Service dependencies initialized"
+time="2024-11-14 12:22:17" level=info msg="gRPC server is running" port=":8084"
+time="2024-11-14 12:43:37" level=info msg="Starting application..."
+time="2024-11-14 12:43:37" level=info msg="Configuration loaded successfully"
+time="2024-11-14 12:43:38" level=info msg="Service dependencies initialized"
+time="2024-11-14 12:43:38" level=info msg="gRPC server is running" port=":8084"
+[36mINFO[0m[2024-11-14 12:45:13] Starting application...                      
+[36mINFO[0m[2024-11-14 12:45:13] Configuration loaded successfully            
+[36mINFO[0m[2024-11-14 12:45:13] Service dependencies initialized             
+[36mINFO[0m[2024-11-14 12:45:13] gRPC server is running                        [36mport[0m=":8084"
+[36mINFO[0m[2024-11-14 15:48:31] Starting application...                      
+[36mINFO[0m[2024-11-14 15:48:31] Configuration loaded successfully            
+[36mINFO[0m[2024-11-14 15:48:31] Service dependencies initialized             
+[36mINFO[0m[2024-11-14 15:48:31] gRPC server is running                        [36mport[0m=":8084"

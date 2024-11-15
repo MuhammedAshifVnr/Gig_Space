@@ -198,6 +198,13 @@ func (s *GigService) AcceptRequest(ctx context.Context, req *proto.AcceptReq) (*
 		return nil, err
 	}
 
+	if err := s.SendNotification(ctx, model.OrderEvent{
+		OrderID: req.OrderId,
+		Event:   "OrderAccepted",
+	}, viper.GetString("OrderTopic")); err != nil {
+		return nil, err
+	}
+
 	log.Printf("Order %s accepted successfully", req.OrderId)
 	return &proto.CommonGigRes{
 		Message: "Order Accepted.",
@@ -215,6 +222,13 @@ func (s *GigService) RejectRequest(ctx context.Context, req *proto.RejectReq) (*
 
 	if err != nil {
 		log.Printf("Failed to reject order %s: %v", req.OrderId, err)
+		return nil, err
+	}
+
+	if err := s.SendNotification(ctx, model.OrderEvent{
+		OrderID: req.OrderId,
+		Event:   "OrderRejection",
+	}, viper.GetString("OrderTopic")); err != nil {
 		return nil, err
 	}
 
@@ -254,6 +268,7 @@ func (s *GigService) GetOrderByID(ctx context.Context, req *proto.OrderByIDReq) 
 			GigId:        uint64(order.CustomGigID),
 			Status:       order.Status,
 			ClientId:     uint64(order.ClinetID),
+			FrelancerId:  uint64(order.FreelancerID),
 			Amount:       int64(order.Amount),
 			LastUpdated:  order.UpdatedAt.String(),
 			OrderCreated: order.CreatedAt.String(),
@@ -269,6 +284,7 @@ func (s *GigService) GetOrderByID(ctx context.Context, req *proto.OrderByIDReq) 
 			GigId:        uint64(order.GigID),
 			Status:       order.Status,
 			ClientId:     uint64(order.ClinetID),
+			FrelancerId:  uint64(order.FreelancerID),
 			Amount:       int64(order.Amount),
 			LastUpdated:  order.UpdatedAt.String(),
 			OrderCreated: order.CreatedAt.String(),

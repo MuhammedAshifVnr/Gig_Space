@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/MuhammedAshifVnr/Gig_Space/api_gateway/utils/helper"
 	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
 	"github.com/gofiber/fiber/v2"
 )
@@ -33,12 +34,30 @@ func NewGigHandler(gigConn proto.GigServiceClient) *GigHandler {
 // @Param images formData []file true "Images for the gig (can upload multiple images)"
 // @Router /gig/add [post]
 func (h *GigHandler) CreateGig(c *fiber.Ctx) error {
-	title := c.FormValue("title")
-	description := c.FormValue("description")
-	category := c.FormValue("category")
-	deliveryStr := c.FormValue("delivery")
-	revisionsStr := c.FormValue("revisions")
-	priceS := c.FormValue("price")
+	title, err := helper.GetRequiredFormValue(c, "title")
+	if err != nil {
+		return err
+	}
+	description, err := helper.GetRequiredFormValue(c, "description")
+	if err != nil {
+		return err
+	}
+	category, err := helper.GetRequiredFormValue(c, "category")
+	if err != nil {
+		return err
+	}
+	deliveryStr, err := helper.GetRequiredFormValue(c, "delivery")
+	if err != nil {
+		return err
+	}
+	revisionsStr, err := helper.GetRequiredFormValue(c, "revisions")
+	if err != nil {
+		return err
+	}
+	priceS, err := helper.GetRequiredFormValue(c, "price")
+	if err != nil {
+		return err
+	}
 	sellerID := c.Locals("userID")
 	userid, ok := sellerID.(uint)
 	if !ok {
@@ -135,12 +154,35 @@ func (h *GigHandler) GetGigByUserID(c *fiber.Ctx) error {
 // @Router /gig/{id} [put]
 func (h *GigHandler) UpdaeteGig(c *fiber.Ctx) error {
 	Id := c.Params("id")
-	title := c.FormValue("title")
-	description := c.FormValue("description")
-	category := c.FormValue("category")
-	deliveryStr := c.FormValue("delivery")
-	revisionsStr := c.FormValue("revisions")
-	priceS := c.FormValue("price")
+	title, err := helper.GetRequiredFormValue(c, "title")
+	if err != nil {
+		return err
+	}
+
+	description, err := helper.GetRequiredFormValue(c, "description")
+	if err != nil {
+		return err
+	}
+
+	category, err := helper.GetRequiredFormValue(c, "category")
+	if err != nil {
+		return err
+	}
+
+	deliveryStr, err := helper.GetRequiredFormValue(c, "delivery")
+	if err != nil {
+		return err
+	}
+
+	revisionsStr, err := helper.GetRequiredFormValue(c, "revisions")
+	if err != nil {
+		return err
+	}
+
+	priceS, err := helper.GetRequiredFormValue(c, "price")
+	if err != nil {
+		return err
+	}
 	sellerID := c.Locals("userID")
 	userid, ok := sellerID.(uint)
 	if !ok {
@@ -259,7 +301,10 @@ func (h *GigHandler) CreateQuote(c *fiber.Ctx) error {
 	id := c.Params("GigID")
 	gigID, _ := strconv.Atoi(id)
 	fmt.Println(gigID)
-	describe := c.FormValue("Message")
+	describe, err := helper.GetRequiredFormValue(c, "Message")
+	if err != nil {
+		return nil
+	}
 	price, _ := strconv.Atoi(c.FormValue("Price"))
 	delivery, _ := strconv.Atoi(c.FormValue("DeliveryDays"))
 	userid, _ := c.Locals("userID").(uint)
@@ -314,8 +359,14 @@ func (h *GigHandler) CreateCustomGig(c *fiber.Ctx) error {
 	freelancerID, ok := c.Locals("userID").(uint)
 	gigRequestID, err1 := strconv.Atoi(c.FormValue("gig_request_id"))
 	clientID, err2 := strconv.Atoi(c.FormValue("client_id"))
-	title := c.FormValue("title")
-	description := c.FormValue("description")
+	title, err := helper.GetRequiredFormValue(c, "title")
+	if err != nil {
+		return err
+	}
+	description, err := helper.GetRequiredFormValue(c, "description")
+	if err != nil {
+		return err
+	}
 	price, err3 := strconv.ParseFloat(c.FormValue("price"), 64)
 	deliveryDays, err4 := strconv.Atoi(c.FormValue("delivery_days"))
 
@@ -488,8 +539,8 @@ func (h *GigHandler) GetOrderByID(c *fiber.Ctx) error {
 func (h *GigHandler) ClientPendingUpdate(c *fiber.Ctx) error {
 	orderID := c.Params("order_id")
 	client := c.Locals("userID").(uint)
-	res, err := h.GigClinet.ClientUpdatePendingStatus(context.Background(),&proto.OrderIDReq{
-		OrderId: orderID,
+	res, err := h.GigClinet.ClientUpdatePendingStatus(context.Background(), &proto.OrderIDReq{
+		OrderId:  orderID,
 		ClientId: uint64(client),
 	})
 	if err != nil {
@@ -510,8 +561,8 @@ func (h *GigHandler) ClientPendingUpdate(c *fiber.Ctx) error {
 func (h *GigHandler) ClientDoneUpdate(c *fiber.Ctx) error {
 	orderID := c.Params("order_id")
 	client := c.Locals("userID").(uint)
-	res, err := h.GigClinet.ClientUpdateDoneStatus(context.Background(),&proto.OrderIDReq{
-		OrderId: orderID,
+	res, err := h.GigClinet.ClientUpdateDoneStatus(context.Background(), &proto.OrderIDReq{
+		OrderId:  orderID,
 		ClientId: uint64(client),
 	})
 	if err != nil {

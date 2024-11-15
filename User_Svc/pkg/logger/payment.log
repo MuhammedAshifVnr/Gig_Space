@@ -1,0 +1,12 @@
+[36mINFO[0m[2024-11-14 12:51:03] Starting application...                      
+[36mINFO[0m[2024-11-14 12:51:03] Configuration loaded successfully            
+[36mINFO[0m[2024-11-14 12:51:03] Service dependencies initialized             
+[36mINFO[0m[2024-11-14 12:51:03] gRPC server is running                        [36mport[0m=":8080"
+[36mINFO[0m[2024-11-14 15:48:25] Starting application...                      
+[36mINFO[0m[2024-11-14 15:48:25] Configuration loaded successfully            
+[36mINFO[0m[2024-11-14 15:48:25] Service dependencies initialized             
+[36mINFO[0m[2024-11-14 15:48:25] gRPC server is running                        [36mport[0m=":8080"
+[33mWARN[0m[2024-11-14 15:49:24] Invalid username or password                  [33memail[0m=ashifpvnr@gmail.com
+[36mINFO[0m[2024-11-14 15:50:32] User Login successfully                       [36memail[0m=ashifpvnr@gmail.com
+[33mWARN[0m[2024-11-14 15:50:36] Invalid skill provided                        [33mskill_name[0m=test
+[33mWARN[0m[2024-11-14 15:51:00] Invalid skill provided                        [33mskill_name[0m=r

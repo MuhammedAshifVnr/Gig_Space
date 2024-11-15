@@ -15,7 +15,7 @@ func InitializeService() *service.GigService {
 	userClient := client.NewUserClinet()
 	searchClient := client.NewSearchClinet()
 	paymentClient := client.NewPaymentClinet()
-	kafkaWriter:=config.InitKafkaWriters([]string{viper.GetString("Broker")},[]string{viper.GetString("RefundTopic"),viper.GetString("StatusTopic"),viper.GetString("PaymentTopic")})
+	kafkaWriter:=config.InitKafkaWriters([]string{viper.GetString("Broker")},[]string{viper.GetString("RefundTopic"),viper.GetString("StatusTopic"),viper.GetString("PaymentTopic"),viper.GetString("OrderTopic")})
 	service := service.NewGigService(repo, s3Svc, userClient, searchClient, paymentClient,kafkaWriter)
 
 	return service

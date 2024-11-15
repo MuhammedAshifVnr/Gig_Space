@@ -54,11 +54,11 @@ func main() {
 
 	OrderReader := di.NewKafkaConsumer(viper.GetString("Broker"), viper.GetString("OrderTopic"))
 	go func() {
-		if err := app.StartChatNotificationConsumer(OrderReader); err != nil {
+		if err := app.StartOrderNotificationConsumer(OrderReader); err != nil {
 			log.Fatalf("failed to start Order consumer: %v", err)
 		}
 	}()
-	
+
 	log.Println("Notification server is running on port ", viper.GetString("Broker"))
 	<-forever
 }
