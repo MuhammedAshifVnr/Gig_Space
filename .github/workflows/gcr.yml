@@ -35,6 +35,6 @@ jobs:
       # Step 5: Build and Push API Gateway Docker Image
       - name: Build and Push API Gateway Image
         run: |
-          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/api-gateway:latest -f api_gateway/Dockerfile api_gateway
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/api-gateway:latest -f api_gateway/Dockerfile
           docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/api-gateway:latest
 
