@@ -32,7 +32,7 @@ jobs:
 
     # Build the Docker image
     - name: Build Docker Image
-      run: docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/api_gateway:latest ./Api_gateway
+      run: docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/api-gateway-svc:latest ./Api_gateway
 
     # Push the Docker image to GCR
     - name: Push Docker Image to GCR
