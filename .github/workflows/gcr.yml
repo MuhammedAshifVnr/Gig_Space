@@ -3,7 +3,7 @@ name: Build and Push Docker Image to GCR
 on:
   push:
     branches:
-      - main  # Trigger on push to the main branch 
+      - main
 
 jobs:
   build-and-push:
@@ -14,21 +14,25 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
+    # Authenticate with Google Cloud
+    - name: Authenticate with Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
     # Set up Google Cloud SDK
     - name: Set up Google Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
       with:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
-        service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-        export_default_credentials: true
 
     # Authenticate Docker to use GCR
-    - name: Authenticate Docker with GCR
+    - name: Configure Docker for GCR
       run: gcloud auth configure-docker --quiet
 
     # Build the Docker image
     - name: Build Docker Image
-      run: docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/api_gateway:latest ./Api_gateway
+      run: docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/api_gateway:latest ./api_gateway
 
     # Push the Docker image to GCR
     - name: Push Docker Image to GCR
