@@ -36,4 +36,4 @@ jobs:
 
     # Push the Docker image to GCR
     - name: Push Docker Image to GCR
-      run: docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/api_gateway:latest
+      run: docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/api-gateway-svc:latest
