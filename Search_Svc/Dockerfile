@@ -17,6 +17,6 @@ WORKDIR /app
 COPY --from=builder /app/search_svc .
 COPY --from=builder /app/.env ./
 
-EXPOSE 8080
+EXPOSE 8083
 
 CMD ["./search_svc"]

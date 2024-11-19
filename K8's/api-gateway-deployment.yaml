@@ -5,7 +5,7 @@ metadata:
   labels:
     app: api-gateway
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: api-gateway
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: us-central1-docker.pkg.dev/celestial-baton-441615-q8/api-gateway-svc/api-gateway:latest
+          image: us-central1-docker.pkg.dev/celestial-baton-441615-q8/gig-space/api-gateway:latest
           ports:
             - containerPort: 8081
          

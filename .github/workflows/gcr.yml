@@ -1,4 +1,4 @@
-name: Build and Push Docker Images to Artifact Registry
+name: Build, Push, and Deploy Services to GKE
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-and-push:
+  build-push-deploy:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -16,7 +16,7 @@ jobs:
           - Payment_Svc
           - Chat_Svc
           - Search_Svc # List all your services
-        region: [us-central1] # Adjust the region as needed
+        region: [us-central1] # Adjust region if needed
 
     steps:
     - name: Checkout Code
@@ -69,3 +69,19 @@ jobs:
       run: |
         SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]')
         docker push ${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gig-space/$SERVICE_NAME:latest
+
+    - name: Deploy to GKE
+      env:
+        KUBECONFIG: ${{ secrets.KUBECONFIG }}
+      run: |
+        SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]')
+
+        # Define Kubernetes deployment YAML file dynamically
+        DEPLOYMENT_FILE=./k8s/$SERVICE_NAME-deployment.yaml
+
+        if [ -f $DEPLOYMENT_FILE ]; then
+          sed -i "s|<IMAGE_PATH>|${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gig-space/$SERVICE_NAME:latest|g" $DEPLOYMENT_FILE
+          kubectl apply -f $DEPLOYMENT_FILE
+        else
+          echo "No deployment file found for $SERVICE_NAME."
+        fi
