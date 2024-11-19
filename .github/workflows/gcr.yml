@@ -39,7 +39,7 @@ jobs:
             echo "${{ secrets.API_GATEWAY_CONFIG }}" > ./Api_gateway/.env
             ;;
           User_svc)
-            echo "${{ secrets.USER_SVC_CONFIG }}" > ./User_svc/.env
+            echo "${{ secrets.USER_SVC_CONFIG }}" > ./User_Svc/.env
             ;;
         esac
 
