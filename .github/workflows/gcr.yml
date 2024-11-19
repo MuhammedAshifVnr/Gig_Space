@@ -13,6 +13,9 @@ jobs:
         service: 
           - Api_gateway
           - User_Svc
+          - Payment_Svc
+          - Chat_Svc
+          - Search_Svc # List all your services
         region: [us-central1] # Adjust the region as needed
 
     steps:
@@ -40,6 +43,18 @@ jobs:
             ;;
           User_Svc)
             echo "${{ secrets.USER_SVC_CONFIG }}" > ./User_Svc/.env
+            ;;
+          Payment_Svc)
+            echo "${{ secrets.PAYMENT_SVC_CONFIG }}" > ./Payment_Svc/.env
+            ;;
+          Chat_Svc)
+            echo "${{ secrets.CHAT_SVC_CONFIG }}" > ./Chat_Svc/.env
+            ;;
+          Search_Svc)
+            echo "${{ secrets.SEARCH_SVC_CONFIG }}" > ./Search_Svc/.env
+            ;;
+          *)
+            echo "No configuration found for ${{ matrix.service }}"
             ;;
         esac
 
