@@ -11,6 +11,7 @@ jobs:
     strategy:
       matrix:
         service: [Api_gateway, user_svc]
+
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
@@ -28,8 +29,9 @@ jobs:
     - name: Configure Docker for Artifact Registry
       run: gcloud auth configure-docker us-central1-docker.pkg.dev
 
-    - name: Set up .env for the service
-      run: echo "${{ secrets[matrix.service | upper }}_CONFIG" > ./${{ matrix.service }}/.env
+    - name: Create .env file
+      run: |
+        echo "${{ secrets[matrix.service + '_config'] }}" > ./${{ matrix.service }}/.env
 
     - name: Build Docker Image
       run: |
