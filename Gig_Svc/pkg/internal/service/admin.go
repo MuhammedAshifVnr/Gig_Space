@@ -7,6 +7,7 @@ import (
 
 	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
 	"github.com/segmentio/kafka-go"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -20,8 +21,17 @@ type RefundEvent struct {
 func (s *GigService) AdminOrderController(ctx context.Context, req *proto.EmptyGigReq) (*proto.AdOrderController, error) {
 	order, Corder, err := s.repos.AdminGetOrders("Freelancer Rejected")
 	if err != nil {
+		s.Log.WithFields(logrus.Fields{
+			"status": "Freelancer Rejected",
+			"error":  err.Error(),
+		}).Error("Failed to retrieve admin orders")
 		return nil, err
 	}
+
+	s.Log.WithFields(logrus.Fields{
+		"status":      "Freelancer Rejected",
+		"order_count": len(order),
+	}).Info("Successfully retrieved admin orders")
 	return &proto.AdOrderController{
 		Gigs:      order,
 		OfferGigs: Corder,
@@ -34,6 +44,10 @@ func (s *GigService) AdOrderRefund(ctx context.Context, req *proto.AdRefundReq) 
 	if req.OrderId[0] == 'C' {
 		order, err := s.repos.GetCustomOrderByID(req.OrderId)
 		if err != nil {
+			s.Log.WithFields(logrus.Fields{
+				"order_id": req.OrderId,
+				"error":    err.Error(),
+			}).Error("Failed to retrieve custom order")
 			return nil, err
 		}
 		_, err = s.paymetnClient.AddWalletRefund(context.Background(), &proto.AddRefund{
@@ -41,6 +55,7 @@ func (s *GigService) AdOrderRefund(ctx context.Context, req *proto.AdRefundReq) 
 			Amount: int64(order.Amount),
 		})
 		if err != nil {
+
 			if err := s.SendNotification(ctx, RefundEvent{
 				UserID:  uint(order.ClinetID),
 				OrderID: order.OrderID,
@@ -55,11 +70,19 @@ func (s *GigService) AdOrderRefund(ctx context.Context, req *proto.AdRefundReq) 
 		User = order.ClinetID
 		err = s.repos.UpdateOrderStatus(order.OrderID, "Cancelled")
 		if err != nil {
+			s.Log.WithFields(logrus.Fields{
+				"order_id": order.OrderID,
+				"error":    err.Error(),
+			}).Error("Failed to update custom order status to cancelled")
 			return nil, err
 		}
 	} else {
 		order, err := s.repos.GetOrderByID(req.OrderId)
 		if err != nil {
+			s.Log.WithFields(logrus.Fields{
+				"order_id": req.OrderId,
+				"error":    err.Error(),
+			}).Error("Failed to retrieve order")
 			return nil, err
 		}
 		_, err = s.paymetnClient.AddWalletRefund(context.Background(), &proto.AddRefund{
@@ -92,6 +115,12 @@ func (s *GigService) AdOrderRefund(ctx context.Context, req *proto.AdRefundReq) 
 	}, viper.GetString("RefundTopic")); err != nil {
 		return nil, err
 	}
+
+	s.Log.WithFields(logrus.Fields{
+		"user_id":  User,
+		"order_id": req.OrderId,
+		"amount":   Amount,
+	}).Info("Refund successfully processed")
 	return &proto.CommonGigRes{
 		Message: "Refund Done",
 		Status:  200,
@@ -129,7 +158,7 @@ func (s *GigService) AdOrderCheck(ctx context.Context, req *proto.EmptyGigReq) (
 	}, nil
 }
 
-func(s *GigService)AdPaymentTransfer(ctx context.Context,req *proto.PaymentTransferReq)(*proto.CommonGigRes,error){
+func (s *GigService) AdPaymentTransfer(ctx context.Context, req *proto.PaymentTransferReq) (*proto.CommonGigRes, error) {
 	var User uint
 	var Amount int
 	if req.OrderId[0] == 'C' {

@@ -2,15 +2,16 @@ package service
 
 import (
 	"context"
-	"log"
 
 	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/pkg/internal/repo"
+	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/pkg/logger"
 	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/pkg/model"
 	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/utils/convert"
 	"github.com/MuhammedAshifVnr/Gig_Space/Gig_Svc/utils/upimage"
 	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/segmentio/kafka-go"
+	"github.com/sirupsen/logrus"
 )
 
 type GigService struct {
@@ -20,6 +21,7 @@ type GigService struct {
 	searchClient  proto.SearchServiceClient
 	paymetnClient proto.PaymentServiceClient
 	kafkaWriter   map[string]*kafka.Writer
+	Log           *logrus.Logger
 	proto.UnimplementedGigServiceServer
 }
 
@@ -31,13 +33,17 @@ func NewGigService(repo repo.RepoInter, s3Svc *s3.S3, UserClient proto.UserServi
 		userClient:    UserClient,
 		paymetnClient: payment,
 		kafkaWriter:   kafkaWriter,
+		Log:           logger.Log,
 	}
 }
 
 func (s *GigService) CreateGig(ctx context.Context, req *proto.CreateGigReq) (*proto.EmptyResponse, error) {
 	_, err := s.userClient.GetCategoryByName(context.Background(), &proto.CategoryName{Name: req.Category})
 	if err != nil {
-		log.Println("Faild to Find Category: ", err.Error())
+		s.Log.WithFields(logrus.Fields{
+			"category": req.Category,
+			"error":    err.Error(),
+		}).Error("Failed to find category")
 		return &proto.EmptyResponse{}, err
 	}
 	gig := model.Gig{
@@ -52,13 +58,13 @@ func (s *GigService) CreateGig(ctx context.Context, req *proto.CreateGigReq) (*p
 	for _, imageBytes := range req.GetImages() {
 		file, fileHeader, err := convert.ConvertToMultipartFile(imageBytes)
 		if err != nil {
-			log.Println("Error converting image to multipart:", err)
+			s.Log.WithFields(logrus.Fields{"error": err.Error()}).Error("Error converting image to multipart")
 			return nil, err
 		}
 
 		imageUrl, err := upimage.UploadImage(s.s3, file, fileHeader)
 		if err != nil {
-			log.Println("Error uploading image to S3:", err)
+			s.Log.WithFields(logrus.Fields{"error": err.Error()}).Error("Error uploading image to S3")
 			return nil, err
 		}
 
@@ -66,7 +72,10 @@ func (s *GigService) CreateGig(ctx context.Context, req *proto.CreateGigReq) (*p
 	}
 	resGig, err := s.repos.CreateGgi(gig)
 	if err != nil {
-		log.Println("Failed to Create Gig: ", err.Error())
+		s.Log.WithFields(logrus.Fields{
+			"title": req.Title,
+			"error": err.Error(),
+		}).Error("Failed to create gig in database")
 		return &proto.EmptyResponse{}, err
 	}
 	_, err = s.searchClient.IndexGig(context.Background(), &proto.IndexGigRequest{
@@ -81,21 +90,37 @@ func (s *GigService) CreateGig(ctx context.Context, req *proto.CreateGigReq) (*p
 		Image:        gig.Images[0].Url,
 	})
 	if err != nil {
+		s.Log.WithFields(logrus.Fields{
+			"gig_id": resGig.ID,
+			"title":  gig.Title,
+			"error":  err.Error(),
+		}).Error("Failed to index gig in Elasticsearch")
+
 		delErr := s.repos.DeleteGig(resGig.ID, gig.FreelancerID)
 		if delErr != nil {
-			log.Println("Failed to rollback database entry after Elasticsearch failure: ", delErr.Error())
+			s.Log.WithFields(logrus.Fields{
+				"gig_id": resGig.ID,
+				"error":  delErr.Error(),
+			}).Error("Failed to rollback database entry after Elasticsearch failure")
 			return &proto.EmptyResponse{}, delErr
 		}
-		log.Println("Failed to Create document in elastic : ", err.Error())
 		return nil, err
 	}
+
+	s.Log.WithFields(logrus.Fields{
+		"gig_id": resGig.ID,
+		"title":  req.Title,
+	}).Info("Gig successfully created")
 	return &proto.EmptyResponse{}, nil
 }
 
 func (s *GigService) GetGigsByFreelancerID(ctx context.Context, req *proto.GetGigsByFreelancerIDRequest) (*proto.GetGigsByFreelancerIDResponse, error) {
 	gigs, err := s.repos.GetGigsByFreelancerID(uint(req.FreelancerId))
 	if err != nil {
-		log.Println("Failed to Find User Gigs: ", err.Error())
+		s.Log.WithFields(logrus.Fields{
+			"freelancer_id": req.FreelancerId,
+			"error":         err.Error(),
+		}).Error("Failed to find gigs for freelancer")
 		return &proto.GetGigsByFreelancerIDResponse{}, err
 	}
 	var grpcGigs []*proto.Gig
@@ -119,19 +144,29 @@ func (s *GigService) GetGigsByFreelancerID(ctx context.Context, req *proto.GetGi
 		})
 	}
 
+	s.Log.WithFields(logrus.Fields{
+		"freelancer_id": req.FreelancerId,
+		"gig_count":     len(grpcGigs),
+	}).Info("Successfully retrieved gigs for freelancer")
 	return &proto.GetGigsByFreelancerIDResponse{Gigs: grpcGigs}, nil
 }
 
 func (s *GigService) UpdateGigByID(ctx context.Context, req *proto.UpdateGigRequest) (*proto.CommonGigRes, error) {
 	gig, err := s.repos.GetGigByID(uint(req.Id))
 	if err != nil {
-		log.Println("Failed to Find Gig: ", err.Error())
+		s.Log.WithFields(logrus.Fields{
+			"gig_id": req.Id,
+			"error":  err.Error(),
+		}).Error("Failed to find gig")
 		return nil, err
 	}
 	if req.Category != "" {
 		_, err := s.userClient.GetCategoryByName(context.Background(), &proto.CategoryName{Name: req.Category})
 		if err != nil {
-			log.Println("Failed to Find Category: ", err.Error())
+			s.Log.WithFields(logrus.Fields{
+				"category": req.Category,
+				"error":    err.Error(),
+			}).Error("Failed to find category")
 			return nil, err
 		}
 		gig.Category = req.Category
@@ -154,16 +189,28 @@ func (s *GigService) UpdateGigByID(ctx context.Context, req *proto.UpdateGigRequ
 	}
 	if len(req.Images) > 0 {
 		if err = s.repos.DeleteImages(gig.ID); err != nil {
+			s.Log.WithFields(logrus.Fields{
+				"gig_id": req.Id,
+				"error":  err.Error(),
+			}).Error("Failed to delete gig images")
 			return nil, err
 		}
 		gig.Images = []model.Image{}
 		for _, imageBytes := range req.GetImages() {
 			file, fileHeader, err := convert.ConvertToMultipartFile(imageBytes)
 			if err != nil {
+				s.Log.WithFields(logrus.Fields{
+					"gig_id": req.Id,
+					"error":  err.Error(),
+				}).Error("Error converting image to multipart")
 				return nil, err
 			}
 			imageUrl, err := upimage.UploadImage(s.s3, file, fileHeader)
 			if err != nil {
+				s.Log.WithFields(logrus.Fields{
+					"gig_id": req.Id,
+					"error":  err.Error(),
+				}).Error("Error uploading image to S3")
 				return nil, err
 			}
 			gig.Images = append(gig.Images, model.Image{Url: imageUrl})
@@ -172,7 +219,10 @@ func (s *GigService) UpdateGigByID(ctx context.Context, req *proto.UpdateGigRequ
 
 	err = s.repos.UpdateGig(gig)
 	if err != nil {
-		log.Println("Failed to Update Gig: ", err.Error())
+		s.Log.WithFields(logrus.Fields{
+			"gig_id": req.Id,
+			"error":  err.Error(),
+		}).Error("Failed to update gig in database")
 		return nil, err
 	}
 	_, err = s.searchClient.UpdateIndexGig(context.Background(), &proto.IndexGigRequest{
@@ -187,9 +237,16 @@ func (s *GigService) UpdateGigByID(ctx context.Context, req *proto.UpdateGigRequ
 		Image:        gig.Images[0].Url,
 	})
 	if err != nil {
-		log.Println("Failed to Update ES Document: ", err.Error())
+		s.Log.WithFields(logrus.Fields{
+			"gig_id": req.Id,
+			"error":  err.Error(),
+		}).Error("Failed to update Elasticsearch document")
 		return nil, err
 	}
+
+	s.Log.WithFields(logrus.Fields{
+		"gig_id": req.Id,
+	}).Info("Gig updated successfully")
 	return &proto.CommonGigRes{
 		Message: "Updated Successfully",
 		Status:  200,
@@ -200,7 +257,11 @@ func (s *GigService) UpdateGigByID(ctx context.Context, req *proto.UpdateGigRequ
 func (s *GigService) DeleteGigByID(ctx context.Context, req *proto.DeleteReq) (*proto.CommonGigRes, error) {
 	err := s.repos.DeleteGig(uint(req.GigId), uint(req.UserId))
 	if err != nil {
-		log.Println("Failed to delete Gig: ", err.Error())
+		s.Log.WithFields(logrus.Fields{
+			"gig_id":  req.GigId,
+			"user_id": req.UserId,
+			"error":   err.Error(),
+		}).Error("Failed to delete gig from database")
 		return nil, err
 	}
 
@@ -208,9 +269,18 @@ func (s *GigService) DeleteGigByID(ctx context.Context, req *proto.DeleteReq) (*
 		Id: req.GigId,
 	})
 	if err != nil {
-		log.Println("Failed to Delete ES documetn: ", err.Error())
+		s.Log.WithFields(logrus.Fields{
+			"gig_id":  req.GigId,
+			"user_id": req.UserId,
+			"error":   err.Error(),
+		}).Error("Failed to delete gig from Elasticsearch")
 		return nil, err
 	}
+
+	s.Log.WithFields(logrus.Fields{
+		"gig_id":  req.GigId,
+		"user_id": req.UserId,
+	}).Info("Successfully deleted gig")
 	return &proto.CommonGigRes{
 		Message: "Successfully Deleted",
 		Status:  200,
@@ -220,7 +290,10 @@ func (s *GigService) DeleteGigByID(ctx context.Context, req *proto.DeleteReq) (*
 func (s *GigService) GetAllGig(ctx context.Context, req *proto.GigReq) (*proto.GetAllGigRes, error) {
 	gigs, err := s.repos.GetAllGigs(uint(req.UserId))
 	if err != nil {
-		log.Println("Failed to find gigs: ", err)
+		s.Log.WithFields(logrus.Fields{
+			"user_id": req.UserId,
+			"error":   err.Error(),
+		}).Error("Failed to retrieve gigs")
 		return nil, err
 	}
 	var result []*proto.GigCatlog
@@ -232,6 +305,11 @@ func (s *GigService) GetAllGig(ctx context.Context, req *proto.GigReq) (*proto.G
 			Amount: int64(val.Price),
 		})
 	}
+
+	s.Log.WithFields(logrus.Fields{
+		"user_id":   req.UserId,
+		"gig_count": len(result),
+	}).Info("Successfully fetched gigs")
 	return &proto.GetAllGigRes{
 		Gigs: result,
 	}, nil
@@ -240,13 +318,22 @@ func (s *GigService) GetAllGig(ctx context.Context, req *proto.GigReq) (*proto.G
 func (s *GigService) GetGigByID(ctx context.Context, req *proto.GigIDreq) (*proto.GetGigRes, error) {
 	gig, err := s.repos.ClientGetGigByID(uint(req.GigId))
 	if err != nil {
-		log.Println("Failed to find gig: ", err)
+		s.Log.WithFields(logrus.Fields{
+			"gig_id": req.GigId,
+			"error":  err.Error(),
+		}).Error("Failed to retrieve gig details")
 		return nil, err
 	}
 	var images []*proto.Image
 	for _, url := range gig.Images {
 		images = append(images, &proto.Image{Url: url.Url})
 	}
+
+	s.Log.WithFields(logrus.Fields{
+		"gig_id":      req.GigId,
+		"freelancer":  gig.FreelancerID,
+		"image_count": len(images),
+	}).Info("Successfully fetched gig details")
 	return &proto.GetGigRes{
 		Gigs: &proto.Gig{
 			Id:           uint64(gig.ID),
