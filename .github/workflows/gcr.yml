@@ -16,12 +16,6 @@ jobs:
           - Payment_svc
           - Chat_svc
           - Search_svc # List all your services
-        secret:
-          - ${{ secrets.API_GATEWAY_CONFIG }}
-          - ${{ secrets.USER_SVC_CONFIG }}
-          - ${{ secrets.PAYMENT_SVC_CONFIG }}
-          - ${{ secrets.CHAT_SVC_CONFIG }}
-          - ${{ secrets.SEARCH_SVC_CONFIG }}
         region: [us-central1] # Region for Artifact Registry
 
     steps:
@@ -41,13 +35,28 @@ jobs:
     - name: Configure Docker for Artifact Registry
       run: gcloud auth configure-docker ${{ matrix.region }}-docker.pkg.dev
 
-    - name: Create .env file
+    - name: Set up .env file for service
       run: |
-        if [ -n "${{ matrix.secret }}" ]; then
-          echo "${{ matrix.secret }}" > ./${{ matrix.service }}/.env
-        else
-          echo "No .env content provided for ${{ matrix.service }}."
-        fi
+        case "${{ matrix.service }}" in
+          Api_gateway)
+            echo "${{ secrets.API_GATEWAY_CONFIG }}" > ./Api_gateway/.env
+            ;;
+          User_svc)
+            echo "${{ secrets.USER_SVC_CONFIG }}" > ./User_svc/.env
+            ;;
+          Payment_svc)
+            echo "${{ secrets.PAYMENT_SVC_CONFIG }}" > ./Payment_svc/.env
+            ;;
+          Chat_svc)
+            echo "${{ secrets.CHAT_SVC_CONFIG }}" > ./Chat_svc/.env
+            ;;
+          Search_svc)
+            echo "${{ secrets.SEARCH_SVC_CONFIG }}" > ./Search_svc/.env
+            ;;
+          *)
+            echo "No configuration found for ${{ matrix.service }}"
+            ;;
+        esac
 
     - name: Build Docker Image
       run: |
