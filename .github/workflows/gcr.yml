@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [Api_gateway, user_svc, payment_svc, chat_svc, search_svc]
+        service: [Api_gateway, User_svc]
 
     steps:
     - name: Checkout Code
@@ -29,11 +29,13 @@ jobs:
     - name: Configure Docker for Artifact Registry
       run: gcloud auth configure-docker us-central1-docker.pkg.dev
 
+    - name: Set Secret to Environment Variable
+      run: echo "SECRET=${{ secrets[matrix.service_config] }}" >> $GITHUB_ENV
+      env:
+        service_config: ${{ matrix.service }}_config
+
     - name: Create .env file
-      run: |
-        SERVICE_NAME=${{ matrix.service }}
-        SECRET_KEY="${SERVICE_NAME}_config"
-        echo "${{ secrets[SECRET_KEY] }}" > ./${SERVICE_NAME}/.env
+      run: echo "${SECRET}" > ./${{ matrix.service }}/.env
 
     - name: Build Docker Image
       run: |
