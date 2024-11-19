@@ -15,6 +15,7 @@ FROM alpine:3.18
 WORKDIR /app
 
 COPY --from=builder /app/api_gateway .
+COPY --from=builder /app/.env ./
 COPY --from=builder /app/temp ./temp
 
 EXPOSE 8080
