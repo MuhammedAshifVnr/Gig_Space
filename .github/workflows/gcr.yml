@@ -77,7 +77,7 @@ jobs:
         SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]')
 
         # Define Kubernetes deployment YAML file dynamically
-        DEPLOYMENT_FILE=./k8s/$SERVICE_NAME-deployment.yaml
+        DEPLOYMENT_FILE=./K8's/$SERVICE_NAME-deployment.yaml
 
         if [ -f $DEPLOYMENT_FILE ]; then
           sed -i "s|<IMAGE_PATH>|${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gig-space/$SERVICE_NAME:latest|g" $DEPLOYMENT_FILE
