@@ -13,9 +13,15 @@ jobs:
         service: 
           - Api_gateway
           - User_svc
+          - Payment_svc
+          - Chat_svc
+          - Search_svc # List all your services
         secret:
           - ${{ secrets.API_GATEWAY_CONFIG }}
           - ${{ secrets.USER_SVC_CONFIG }}
+          - ${{ secrets.PAYMENT_SVC_CONFIG }}
+          - ${{ secrets.CHAT_SVC_CONFIG }}
+          - ${{ secrets.SEARCH_SVC_CONFIG }}
         region: [us-central1] # Region for Artifact Registry
 
     steps:
