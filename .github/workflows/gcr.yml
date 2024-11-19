@@ -13,7 +13,7 @@ jobs:
         service: 
           - Api_gateway
           - User_Svc
-        region: [us-central1] # Region for Artifact Registry
+        region: [us-central1] # Adjust the region as needed
 
     steps:
     - name: Checkout Code
@@ -47,10 +47,10 @@ jobs:
       run: |
         SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]')
         docker build \
-          -t ${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/$SERVICE_NAME-svc/$SERVICE_NAME:latest \
+          -t ${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gig-space/$SERVICE_NAME:latest \
           ./${{ matrix.service }}
 
     - name: Push Docker Image to Artifact Registry
       run: |
         SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]')
-        docker push ${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/$SERVICE_NAME-svc/$SERVICE_NAME:latest
+        docker push ${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gig-space/$SERVICE_NAME:latest
