@@ -1,4 +1,4 @@
-name: Build, Push, and Deploy Services to GKE
+name: Build, Push, and Deploy Docker Images to GCP Kubernetes
 
 on:
   push:
@@ -15,73 +15,80 @@ jobs:
           - User_Svc
           - Payment_Svc
           - Chat_Svc
-          - Search_Svc # List all your services
-        region: [us-central1] # Adjust region if needed
+          - Search_Svc
+        region: [us-central1]
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Authenticate with Google Cloud
-      uses: google-github-actions/auth@v1
-      with:
-        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-    - name: Set up Google Cloud SDK
-      uses: google-github-actions/setup-gcloud@v1
-      with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-    - name: Configure Docker for Artifact Registry
-      run: gcloud auth configure-docker ${{ matrix.region }}-docker.pkg.dev
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ matrix.region }}-docker.pkg.dev
 
-    - name: Set up .env file for service
-      run: |
-        case "${{ matrix.service }}" in
-          Api_gateway)
-            echo "${{ secrets.API_GATEWAY_CONFIG }}" > ./Api_gateway/.env
-            ;;
-          User_Svc)
-            echo "${{ secrets.USER_SVC_CONFIG }}" > ./User_Svc/.env
-            ;;
-          Payment_Svc)
-            echo "${{ secrets.PAYMENT_SVC_CONFIG }}" > ./Payment_Svc/.env
-            ;;
-          Chat_Svc)
-            echo "${{ secrets.CHAT_SVC_CONFIG }}" > ./Chat_Svc/.env
-            ;;
-          Search_Svc)
-            echo "${{ secrets.SEARCH_SVC_CONFIG }}" > ./Search_Svc/.env
-            ;;
-          *)
-            echo "No configuration found for ${{ matrix.service }}"
-            ;;
-        esac
+      - name: Set up .env file for service
+        run: |
+          case "${{ matrix.service }}" in
+            Api_gateway)
+              echo "${{ secrets.API_GATEWAY_CONFIG }}" > ./Api_gateway/.env
+              ;;
+            User_Svc)
+              echo "${{ secrets.USER_SVC_CONFIG }}" > ./User_Svc/.env
+              ;;
+            Payment_Svc)
+              echo "${{ secrets.PAYMENT_SVC_CONFIG }}" > ./Payment_Svc/.env
+              ;;
+            Chat_Svc)
+              echo "${{ secrets.CHAT_SVC_CONFIG }}" > ./Chat_Svc/.env
+              ;;
+            Search_Svc)
+              echo "${{ secrets.SEARCH_SVC_CONFIG }}" > ./Search_Svc/.env
+              ;;
+            *)
+              echo "No configuration found for ${{ matrix.service }}"
+              ;;
+          esac
 
-    - name: Build Docker Image
-      run: |
-        SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]')
-        docker build \
-          -t ${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gig-space/$SERVICE_NAME:latest \
-          ./${{ matrix.service }}
+      - name: Build Docker Image
+        run: |
+          SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
+          docker build \
+            -t ${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gig-space/$SERVICE_NAME:latest \
+            ./${{ matrix.service }}
 
-    - name: Push Docker Image to Artifact Registry
-      run: |
-        SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]')
-        docker push ${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gig-space/$SERVICE_NAME:latest
+      - name: Push Docker Image to Artifact Registry
+        run: |
+          SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
+          docker push ${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gig-space/$SERVICE_NAME:latest
 
-    - name: Deploy to GKE
-      env:
-        KUBECONFIG: ${{ secrets.KUBECONFIG }}
-      run: |
-        SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]')
+      - name: Debug SERVICE_NAME
+        run: |
+          SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
+          echo "SERVICE_NAME=${SERVICE_NAME}"
+          echo "Looking for deployment file in: ./K8's/"
+          ls "./K8's/"
 
-        # Define Kubernetes deployment YAML file dynamically
-        DEPLOYMENT_FILE=./K8's/$SERVICE_NAME-deployment.yaml
+      - name: Deploy to GCP Kubernetes
+        run: |
+          SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
+          DEPLOYMENT_FILE="./K8's/${SERVICE_NAME}-deployment.yaml"
 
-        if [ -f $DEPLOYMENT_FILE ]; then
-          sed -i "s|<IMAGE_PATH>|${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gig-space/$SERVICE_NAME:latest|g" $DEPLOYMENT_FILE
-          kubectl apply -f $DEPLOYMENT_FILE
-        else
-          echo "No deployment file found for $SERVICE_NAME."
-        fi
+          echo "Looking for deployment file: $DEPLOYMENT_FILE"
+
+          if [ -f "$DEPLOYMENT_FILE" ]; then
+            echo "Found deployment file for $SERVICE_NAME."
+            sed -i "s|<IMAGE_PATH>|${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gig-space/$SERVICE_NAME:latest|g" "$DEPLOYMENT_FILE"
+            kubectl apply -f "$DEPLOYMENT_FILE"
+          else
+            echo "No deployment file found for $SERVICE_NAME."
+            exit 1
+          fi
