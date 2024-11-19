@@ -1,4 +1,4 @@
-name: Build and Push All Services to Artifact Registry
+name: Build and Push Docker Images to Artifact Registry
 
 on:
   push:
@@ -10,9 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service:
-          - Api_gateway
-          - User_svc
+        service: [Api_gateway, User_svc] # List all your services
+        region: [us-central1] # Region for Artifact Registry
 
     steps:
     - name: Checkout Code
@@ -29,21 +28,20 @@ jobs:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
 
     - name: Configure Docker for Artifact Registry
-      run: gcloud auth configure-docker us-central1-docker.pkg.dev
+      run: gcloud auth configure-docker ${{ matrix.region }}-docker.pkg.dev
 
-    - name: Map Secrets to Environment Variables
+    - name: Create .env file
       run: |
-        if [ "${{ matrix.service }}" == "Api_gateway" ]; then
-          echo "${{ secrets.Api_gateway_config }}" > .env
-        elif [ "${{ matrix.service }}" == "User_svc" ]; then
-          echo "${{ secrets.user_svc_config }}" > .env
+        if [[ -n "${{ secrets[matrix.service | upper }}_CONFIG" }} ]]; then
+          echo "${{ secrets[matrix.service | upper }}_CONFIG" > ./${{ matrix.service }}/.env
         fi
-      working-directory: ./${{ matrix.service }}
 
     - name: Build Docker Image
       run: |
-        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ matrix.service }}/svc:latest ./${{ matrix.service }}
+        docker build \
+          -t ${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ matrix.service | slugify }}-svc/${{ matrix.service | slugify }}:latest \
+          ./${{ matrix.service }}
 
     - name: Push Docker Image to Artifact Registry
       run: |
-        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ matrix.service }}/svc:latest
+        docker push ${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ matrix.service | slugify }}-svc/${{ matrix.service | slugify }}:latest
