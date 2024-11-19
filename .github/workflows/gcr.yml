@@ -12,10 +12,7 @@ jobs:
       matrix:
         service: 
           - Api_gateway
-          - User_svc
-          - Payment_svc
-          - Chat_svc
-          - Search_svc # List all your services
+          - User_Svc
         region: [us-central1] # Region for Artifact Registry
 
     steps:
@@ -43,18 +40,6 @@ jobs:
             ;;
           User_svc)
             echo "${{ secrets.USER_SVC_CONFIG }}" > ./User_svc/.env
-            ;;
-          Payment_svc)
-            echo "${{ secrets.PAYMENT_SVC_CONFIG }}" > ./Payment_svc/.env
-            ;;
-          Chat_svc)
-            echo "${{ secrets.CHAT_SVC_CONFIG }}" > ./Chat_svc/.env
-            ;;
-          Search_svc)
-            echo "${{ secrets.SEARCH_SVC_CONFIG }}" > ./Search_svc/.env
-            ;;
-          *)
-            echo "No configuration found for ${{ matrix.service }}"
             ;;
         esac
 
