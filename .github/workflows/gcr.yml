@@ -10,7 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [Api_gateway, User_svc] # List all your services
+        service: 
+          - Api_gateway
+          - User_svc
+        secret:
+          - ${{ secrets.API_GATEWAY_CONFIG }}
+          - ${{ secrets.USER_SVC_CONFIG }}
         region: [us-central1] # Region for Artifact Registry
 
     steps:
@@ -30,14 +35,12 @@ jobs:
     - name: Configure Docker for Artifact Registry
       run: gcloud auth configure-docker ${{ matrix.region }}-docker.pkg.dev
 
-    - name: Create .env file if secret exists
+    - name: Create .env file
       run: |
-        ENV_SECRET_NAME=$(echo "${{ matrix.service }}" | tr '[:lower:]' '[:upper:]')_CONFIG
-        ENV_CONTENT=${{ secrets[ENV_SECRET_NAME] }}
-        if [ -n "$ENV_CONTENT" ]; then
-          echo "$ENV_CONTENT" > ./${{ matrix.service }}/.env
+        if [ -n "${{ matrix.secret }}" ]; then
+          echo "${{ matrix.secret }}" > ./${{ matrix.service }}/.env
         else
-          echo "No secret found for $ENV_SECRET_NAME, skipping .env creation."
+          echo "No .env content provided for ${{ matrix.service }}."
         fi
 
     - name: Build Docker Image
