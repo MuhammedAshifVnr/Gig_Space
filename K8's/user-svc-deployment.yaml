@@ -1,31 +1,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api-gateway
+  name: user-svc-deployment
   labels:
-    app: api-gateway
+    app: user-svc
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: api-gateway
+      app: user-svc
   template:
     metadata:
       labels:
-        app: api-gateway
+        app: user-svc
     spec:
       containers:
-      - name: api-gateway
-        image: us-central1-docker.pkg.dev/celestial-baton-441615-q8/gig-space/api-gateway:latest
+      - name: user-svc
+        image: us-central1-docker.pkg.dev/celestial-baton-441615-q8/gig-space/user-svc:latest
         ports:
-        - containerPort: 8081
+        - containerPort: 8080
         env:
         - name: DSN
           valueFrom:
             secretKeyRef:
               name: gig-space-secret
               key: DSN
-        - name: USER_CONN
+        - name: PORT
           value: ":8080"
       volumes:
       - name: env-volume
@@ -35,14 +35,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: api-gateway-service
+  name: user-svc-service
   labels:
-    app: api-gateway
+    app: user-svc
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
-    app: api-gateway
+    app: user-svc
   ports:
     - protocol: TCP
-      port: 8081
-      targetPort: 8081
+      port: 8080
+      targetPort: 8080

@@ -70,25 +70,4 @@ jobs:
           SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
           docker push ${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gig-space/$SERVICE_NAME:latest
 
-      - name: Debug SERVICE_NAME
-        run: |
-          SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
-          echo "SERVICE_NAME=${SERVICE_NAME}"
-          echo "Looking for deployment file in: ./K8's/"
-          ls "./K8's/"
-
-      - name: Deploy to GCP Kubernetes
-        run: |
-          SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
-          DEPLOYMENT_FILE="./K8's/${SERVICE_NAME}-deployment.yaml"
-
-          echo "Looking for deployment file: $DEPLOYMENT_FILE"
-
-          if [ -f "$DEPLOYMENT_FILE" ]; then
-            echo "Found deployment file for $SERVICE_NAME."
-            sed -i "s|<IMAGE_PATH>|${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gig-space/$SERVICE_NAME:latest|g" "$DEPLOYMENT_FILE"
-            kubectl apply -f "$DEPLOYMENT_FILE"
-          else
-            echo "No deployment file found for $SERVICE_NAME."
-            exit 1
-          fi
+      
