@@ -12,7 +12,7 @@ import (
 func NewUserClient() proto.UserServiceClient {
 	usersvc, err := grpc.Dial(viper.GetString("UserConn"), grpc.WithInsecure())
 	if err != nil {
-		fmt.Println("User Port: ", viper.GetString("UserConn"))
+		fmt.Println("User Port: ", viper.GetString("USER_CONN"))
 		log.Fatalf("failed to connect to User service: %v", err)
 	}
 	return proto.NewUserServiceClient(usersvc)
