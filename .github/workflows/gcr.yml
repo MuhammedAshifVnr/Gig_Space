@@ -69,8 +69,3 @@ jobs:
         run: |
           SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
           docker push ${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gig-space/$SERVICE_NAME:latest
-
-<<<<<<< HEAD
-      
-=======
->>>>>>> 5e178be6201ac0979f50d48a0e4c8d1d6d4aa5c9
