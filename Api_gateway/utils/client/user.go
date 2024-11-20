@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/MuhammedAshifVnr/Gig_Space_Proto/proto"
