@@ -21,7 +21,7 @@ func SendOtp(UserEmail, UserName string) (string, error) {
 	fmt.Println("from : ", from, "pass:", password)
 	otp := generateOtp()
 	subject := "Just One More Step! Verify Your Email to Secure Your Account"
-	link := "http://localhost:8081/user/verify/?otp=" + otp + "&email=" + UserEmail
+	link := "http://34.121.243.196:8081/user/verify/?otp=" + otp + "&email=" + UserEmail
 	body := fmt.Sprintf(
 		"Hi %v,\n\n"+
 			"We're excited to have you onboard at Gig Space! 🚀\n\n"+
@@ -49,8 +49,8 @@ func SendOtp(UserEmail, UserName string) (string, error) {
 }
 
 func ForgotOtp(UserEmail, UserName string) (string, error) {
-	from := viper.GetString("Email")
-	password := viper.GetString("AppPassword")
+	from := viper.GetString("EMAIL")
+	password := viper.GetString("APP_PASSWORD")
 
 	otp := generateOtp()
 

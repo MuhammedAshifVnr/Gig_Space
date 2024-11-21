@@ -30,7 +30,7 @@ func GenerateJwtToken(Email string, ID uint, Role string,Expiry int64) (string, 
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	secret := viper.GetString("TokenSecret")
+	secret := viper.GetString("TOKEN_SECRET")
 	if secret == "" {
 		return "", fmt.Errorf("JWT secret is not configured")
 	}

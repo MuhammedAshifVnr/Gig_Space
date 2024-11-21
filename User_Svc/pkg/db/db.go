@@ -26,7 +26,7 @@ func InitializeDB(DB string) (*gorm.DB, *redis.Client,*s3.S3) {
 	})
 	sess, _ := session.NewSession(&aws.Config{
 		Region:      aws.String("eu-north-1"),
-		Credentials: credentials.NewStaticCredentials(viper.GetString("Accesskey"), viper.GetString("Secretaccesskey"), ""),
+		Credentials: credentials.NewStaticCredentials(viper.GetString("ACCESS_KEY"), viper.GetString("SECRET_ACCESS_KEY"), ""),
 	})
 	s3Svc := s3.New(sess)
 	autoMigrate(db)

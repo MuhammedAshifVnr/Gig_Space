@@ -9,7 +9,7 @@ import (
 )
 
 func NewPaymentClinet() proto.PaymentServiceClient {
-	search, err := grpc.Dial(viper.GetString("PaymentConn"), grpc.WithInsecure())
+	search, err := grpc.Dial(viper.GetString("PAYMENT_CONN"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("failed to connect to payment service: %v", err)
 	}
