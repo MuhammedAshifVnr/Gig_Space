@@ -14,6 +14,7 @@ import (
 )
 
 func InitializeDB(DB string) (*gorm.DB, *s3.S3) {
+	DB+="gig_svc"
 	db, err := gorm.Open(postgres.Open(DB), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect DB :%v", err)
