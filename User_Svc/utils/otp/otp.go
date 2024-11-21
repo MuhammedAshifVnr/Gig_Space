@@ -16,8 +16,8 @@ func generateOtp() string {
 }
 
 func SendOtp(UserEmail, UserName string) (string, error) {
-	from := viper.GetString("Email")
-	password := viper.GetString("App_Password")
+	from := viper.GetString("EMAIL")
+	password := viper.GetString("APP_PASSWORD")
 	fmt.Println("from : ", from, "pass:", password)
 	otp := generateOtp()
 	subject := "Just One More Step! Verify Your Email to Secure Your Account"
