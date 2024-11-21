@@ -27,6 +27,16 @@ spec:
               key: DSN
         - name: PORT
           value: ":8080"
+        - name: Email
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: OTP_EMAIL
+        - name: AppPassword
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: APP_PASS
       volumes:
       - name: env-volume
         secret:
