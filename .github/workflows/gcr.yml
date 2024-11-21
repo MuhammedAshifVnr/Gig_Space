@@ -16,6 +16,7 @@ jobs:
           - Payment_Svc
           - Chat_Svc
           - Search_Svc
+          - Gig_Svc
         region: [us-central1]
 
     steps:
@@ -52,6 +53,9 @@ jobs:
               ;;
             Search_Svc)
               echo "${{ secrets.SEARCH_SVC_CONFIG }}" > ./Search_Svc/.env
+              ;;
+            Gig_Svc)
+              echo "${{ secrets.GIG_SVC_CONFIG }}" > ./Gig_Svc/.env
               ;;
             *)
               echo "No configuration found for ${{ matrix.service }}"
