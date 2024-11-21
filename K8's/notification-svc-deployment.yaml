@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-svc
+  labels:
+    app: notification-svc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-svc
+  template:
+    metadata:
+      labels:
+        app: notification-svc
+    spec:
+      containers:
+      - name: notification-svc
+        image: us-central1-docker.pkg.dev/celestial-baton-441615-q8/gig-space/notification-svc:latest # Replace with your image path
+        ports:
+        - containerPort: 9090
+        env:
+        - name: BROKER
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: BROKER
+        - name: EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: OTP_EMAIL
+        - name: APP_PASS
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: APP_PASS
+        - name: USER_CONN
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: USER_SVC_URL
+        - name: GIG_CONN
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: GIG_SVC_URL
+      volumes:
+      - name: env-volume
+        secret:
+          secretName: gig-space-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-svc
+  labels:
+    app: notification-svc
+spec:
+  type: ClusterIP
+  selector:
+    app: notification-svc
+  ports:
+    - protocol: TCP
+      port: 9090
+      targetPort: 9090

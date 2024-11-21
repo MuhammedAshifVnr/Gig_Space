@@ -47,6 +47,21 @@ spec:
             secretKeyRef:
               name: gig-space-secret
               key: GIG_SVC_URL
+        - name: XAPI_KEY
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: XAPI_KEY
+        - name: XAPI_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: XAPI_SECRET
+        - name: BROKER
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: BROKER
       volumes:
       - name: env-volume
         secret:

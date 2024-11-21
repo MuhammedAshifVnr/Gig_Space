@@ -17,6 +17,5 @@ WORKDIR /app
 COPY --from=builder /app/notification_svc .
 COPY --from=builder /app/.env ./
 
-EXPOSE 8084
 
 CMD ["./notification_svc"]
