@@ -14,7 +14,7 @@ FROM alpine:3.18
 
 WORKDIR /app
 
-COPY --from=builder /app/notification_svc_svc .
+COPY --from=builder /app/notification_svc .
 COPY --from=builder /app/.env ./
 
 EXPOSE 8084
