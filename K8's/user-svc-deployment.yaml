@@ -42,6 +42,11 @@ spec:
             secretKeyRef:
               name: gig-space-secret
               key: PAYMENT_SVC_URL
+        - name: TOKEN_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: TOKEN_SECRET
       volumes:
       - name: env-volume
         secret:

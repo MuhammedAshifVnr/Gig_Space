@@ -125,8 +125,9 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 		Value:    res.Token,
 		Expires:  time.Now().Add(24 * time.Hour),
 		HTTPOnly: true,
-		Secure:   true,
-		SameSite: "Lax",
+		Secure:   false, 
+		SameSite: fiber.CookieSameSiteLaxMode,
+		Domain:   "34.121.243.196", 
 	})
 	return c.Status(int(res.Status)).JSON(res)
 }

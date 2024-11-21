@@ -42,6 +42,11 @@ spec:
             secretKeyRef:
               name: gig-space-secret
               key: USER_SVC_URL
+        - name: GIG_CONN
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: GIG_SVC_URL
       volumes:
       - name: env-volume
         secret:
