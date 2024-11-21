@@ -27,12 +27,12 @@ spec:
               key: DSN
         - name: PORT
           value: ":8080"
-        - name: Email
+        - name: EMAIL
           valueFrom:
             secretKeyRef:
               name: gig-space-secret
               key: OTP_EMAIL
-        - name: App_Password
+        - name: APP_PASSWORD
           valueFrom:
             secretKeyRef:
               name: gig-space-secret

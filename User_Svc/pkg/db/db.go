@@ -20,7 +20,7 @@ func InitializeDB(DB string) (*gorm.DB, *redis.Client,*s3.S3) {
 		log.Fatalf("Failed to connect DB :%v", err)
 	}
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "redis-service:6379",
+		Addr:     "redis:6379",
 		Password: "",
 		DB:       0,
 	})
