@@ -18,7 +18,7 @@ func PaymentAuth() fiber.Handler {
 			})
 		}
 		token, err := jwt.ParseWithClaims(cookie, &Claims{}, func(t *jwt.Token) (interface{}, error) {
-			return []byte(viper.GetString("TokenSecret")), nil
+			return []byte(viper.GetString("TOKEN_SECRET")), nil
 		})
 
 		if err != nil || !token.Valid {

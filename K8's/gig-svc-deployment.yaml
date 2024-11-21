@@ -26,27 +26,42 @@ spec:
               name: gig-space-secret
               key: DSN
         - name: PORT
-          value: ":8084"
-        - name: API_KEY
+          value: ":8082"
+        - name: BUCKET_NAME
           valueFrom:
             secretKeyRef:
               name: gig-space-secret
-              key: RAPI_KEY
-        - name: API_SECRET
+              key: BUCKET_NAME
+        - name: SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
               name: gig-space-secret
-              key: RAPI_SECRET
+              key: SECRET_ACCESS_KEY
+        - name: ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: ACCESS_KEY
         - name: USER_CONN
           valueFrom:
             secretKeyRef:
               name: gig-space-secret
               key: USER_SVC_URL
-        - name: GIG_CONN
+        - name: SEARCH_CONN
           valueFrom:
             secretKeyRef:
               name: gig-space-secret
-              key: GIG_SVC_URL
+              key: SEARCH_SVC_URL
+        - name: PAYMENT_CONN
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: PAYMENT_SVC_URL
+        - name: BROKER
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: BROKER
       volumes:
       - name: env-volume
         secret:
@@ -65,4 +80,4 @@ spec:
     - protocol: TCP
       port: 8082
       targetPort: 8082
-    type: ClusterIP
+  type: ClusterIP
