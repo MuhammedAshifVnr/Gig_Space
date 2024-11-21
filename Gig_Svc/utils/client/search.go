@@ -9,7 +9,7 @@ import (
 )
 
 func NewSearchClinet() proto.SearchServiceClient {
-	search, err := grpc.Dial(viper.GetString("SearchConn"), grpc.WithInsecure())
+	search, err := grpc.Dial(viper.GetString("SEARCH_CONN"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("failed to connect to Search service: %v", err)
 	}

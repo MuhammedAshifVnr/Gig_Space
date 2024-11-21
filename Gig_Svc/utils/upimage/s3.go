@@ -13,7 +13,7 @@ func UploadImage(S3 *s3.S3, file multipart.File, fileHeader *multipart.FileHeade
 	fileName := fileHeader.Filename
 
 	_, err := S3.PutObject(&s3.PutObjectInput{
-		Bucket: aws.String(viper.GetString("BucketName")),
+		Bucket: aws.String(viper.GetString("BUCKET_NAME")),
 		Key:    aws.String(fileName),
 		Body:   file,
 	})
@@ -21,6 +21,6 @@ func UploadImage(S3 *s3.S3, file multipart.File, fileHeader *multipart.FileHeade
 		return "", err
 	}
 
-	url := fmt.Sprintf("https://%s.s3.amazonaws.com/%s", viper.GetString("BucketName"), fileName)
+	url := fmt.Sprintf("https://%s.s3.amazonaws.com/%s", viper.GetString("BUCKET_NAME"), fileName)
 	return url, nil
 }
