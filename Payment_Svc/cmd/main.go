@@ -32,16 +32,16 @@ func main() {
 	log.Info("Service dependencies initialized")
 	server := grpc.NewServer()
 	proto.RegisterPaymentServiceServer(server, service)
-	lis, err := net.Listen("tcp", viper.GetString("Port"))
+	lis, err := net.Listen("tcp", viper.GetString("PORT"))
 	if err != nil {
 		log.WithFields(logrus.Fields{
-			"port":  viper.GetString("Port"),
+			"port":  viper.GetString("PORT"),
 			"error": err,
 		}).Fatal("Failed to listen on port")
 		os.Exit(1)
 	}
 	log.WithFields(logrus.Fields{
-		"port": viper.GetString("Port"),
+		"port": viper.GetString("PORT"),
 	}).Info("gRPC server is running")
 	if err := server.Serve(lis); err != nil {
 		log.WithFields(logrus.Fields{

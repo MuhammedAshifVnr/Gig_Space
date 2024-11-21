@@ -28,7 +28,7 @@ type PaymentService struct {
 }
 
 func NewPaymentService(repo repo.RepoInter, UserConn proto.UserServiceClient, GigConn proto.GigServiceClient, kafkaWriter map[string]*kafka.Writer) *PaymentService {
-	client := razorpay.NewClient(viper.GetString("ApiKey"), viper.GetString("ApiSecret"))
+	client := razorpay.NewClient(viper.GetString("API_KEY"), viper.GetString("API_SECRET"))
 	return &PaymentService{
 		UserClient:  UserConn,
 		Repo:        repo,

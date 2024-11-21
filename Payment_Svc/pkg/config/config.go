@@ -22,7 +22,7 @@ func LoadConfig() error {
 
 func InitKafkaWriters(brokers []string) map[string]*kafka.Writer {
 	writers := make(map[string]*kafka.Writer)
-	topics := []string{viper.GetString("ForgotTopic"), viper.GetString("StatusTopic"),viper.GetString("OrderTopic")}
+	topics := []string{viper.GetString("FORGOT_TOPIC"), viper.GetString("STATUS_TOPIC"),viper.GetString("ORDER_TOPIC")}
 	for _, topic := range topics {
 		writers[topic] = NewKafkaWriter(brokers, topic)
 	}

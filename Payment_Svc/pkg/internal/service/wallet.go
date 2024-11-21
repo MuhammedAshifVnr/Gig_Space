@@ -208,7 +208,7 @@ func (s *PaymentService) ForgotWalletPin(ctx context.Context, req *proto.ForgotP
 		}).Errorf("failed to save OTP to repository: %v", err)
 		return nil, fmt.Errorf("failed to save OTP: %w", err)
 	}
-	forgotTopic := viper.GetString("ForgotTopic")
+	forgotTopic := viper.GetString("FORGOT_TOPIC")
 	writer, ok := s.kafkaWriter[forgotTopic]
 	if ok {
 		err = notification.SendNotification(ctx, writer, model.ForgotEvent{

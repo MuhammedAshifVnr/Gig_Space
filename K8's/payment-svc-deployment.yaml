@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: user-svc-deployment
+  name: payment-svc
   labels:
-    app: user-svc
+    app: payment-svc
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: user-svc
+      app: payment-svc
   template:
     metadata:
       labels:
-        app: user-svc
+        app: payment-svc
     spec:
       containers:
-      - name: user-svc
-        image: us-central1-docker.pkg.dev/celestial-baton-441615-q8/gig-space/user-svc:latest
+      - name: payment-svc
+        image: us-central1-docker.pkg.dev/celestial-baton-441615-q8/gig-space/payment-svc:latest
         ports:
-        - containerPort: 8080
+        - containerPort: 8084
         env:
         - name: DSN
           valueFrom:
@@ -26,22 +26,22 @@ spec:
               name: gig-space-secret
               key: DSN
         - name: PORT
-          value: ":8080"
-        - name: EMAIL
+          value: ":8084"
+        - name: API_KEY
           valueFrom:
             secretKeyRef:
               name: gig-space-secret
-              key: OTP_EMAIL
-        - name: APP_PASSWORD
+              key: RAPI_KEY
+        - name: API_SECRET
           valueFrom:
             secretKeyRef:
               name: gig-space-secret
-              key: APP_PASS
-        - name: PAYMENT_CONN
+              key: RAPI_SECRET
+        - name: USER_CONN
           valueFrom:
             secretKeyRef:
               name: gig-space-secret
-              key: PAYMENT_SVC_URL
+              key: USER_SVC_URL
       volumes:
       - name: env-volume
         secret:
@@ -50,14 +50,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: user-svc-service
+  name: payment-svc
   labels:
-    app: user-svc
+    app: payment-svc
 spec:
-  type: ClusterIP
   selector:
-    app: user-svc
+    app: payment-svc
   ports:
-    - protocol: TCP
-      port: 8080
-      targetPort: 8080
+  - protocol: TCP
+    port: 8084
+    targetPort: 8084
+  type: ClusterIP

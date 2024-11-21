@@ -84,7 +84,7 @@ func (s *PaymentService) UpdatePaymentStatus(ctx context.Context, req *proto.Upd
 		return nil, fmt.Errorf("failed to update order status in gig service: %w", err)
 	}
 
-	OrderTopic := viper.GetString("OrderTopic")
+	OrderTopic := viper.GetString("ORDER_TOPIC")
 	writer, ok := s.kafkaWriter[OrderTopic]
 	if ok {
 		err = notification.SendNotification(ctx, writer, model.OrderEvent{

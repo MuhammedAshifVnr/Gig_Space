@@ -34,7 +34,7 @@ func RandString() string {
 }
 
 func AddFundAccount(contactID string, bankAccount map[string]interface{}) (string, error) {
-	client := razorpay.NewClient(viper.GetString("XApiKey"), viper.GetString("XApiSecret"))
+	client := razorpay.NewClient(viper.GetString("XAPI_KEY"), viper.GetString("XAPI_SECRET"))
 	fundAccountData := map[string]interface{}{
 		"contact_id":   contactID,
 		"account_type": "bank_account",
@@ -68,7 +68,7 @@ func CreateContact(userID, name, email, phone string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	req.SetBasicAuth(viper.GetString("XApiKey"), viper.GetString("XApiSecret"))
+	req.SetBasicAuth(viper.GetString("XAPI_KEY"), viper.GetString("XAPI_SECRET"))
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
@@ -115,7 +115,7 @@ func Payout(payoutData map[string]interface{}) (string, error) {
 	}
 
 	// Set Razorpay API credentials
-	req.SetBasicAuth(viper.GetString("XApiKey"), viper.GetString("XApiSecret"))
+	req.SetBasicAuth(viper.GetString("XAPI_KEY"), viper.GetString("XAPI_SECRET"))
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}

@@ -15,6 +15,7 @@ import (
 )
 
 func InitializeDB(DB string) (*gorm.DB, *redis.Client,*s3.S3) {
+	DB+="user_svc"
 	db, err := gorm.Open(postgres.Open(DB), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect DB :%v", err)

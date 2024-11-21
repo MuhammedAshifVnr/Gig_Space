@@ -12,7 +12,7 @@ import (
 
 func RazorPaymentVerification(sign, orderId, paymentId string) error {
 	signature := sign
-	secret := viper.GetString("ApiSecret")
+	secret := viper.GetString("API_SECRET")
 	data := orderId + "|" + paymentId
 	h := hmac.New(sha256.New, []byte(secret))
 	_, err := h.Write([]byte(data))

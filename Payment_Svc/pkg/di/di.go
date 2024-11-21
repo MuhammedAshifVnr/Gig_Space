@@ -10,11 +10,11 @@ import (
 )
 
 func InitializeService() *service.PaymentService {
-	db, rdb := db.InitializeDB(viper.GetString("DBUrl"))
+	db, rdb := db.InitializeDB(viper.GetString("DSN"))
 	repo := repo.NewPaymentRepository(db, rdb)
 	user := client.NewUserClinet()
 	gig := client.NewGigClinet()
-	kafka := config.InitKafkaWriters([]string{viper.GetString("Broker")})
+	kafka := config.InitKafkaWriters([]string{viper.GetString("BROKER")})
 	service := service.NewPaymentService(repo, user, gig, kafka)
 	return service
 }
