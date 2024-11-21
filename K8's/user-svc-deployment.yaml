@@ -32,7 +32,7 @@ spec:
             secretKeyRef:
               name: gig-space-secret
               key: OTP_EMAIL
-        - name: AppPassword
+        - name: App_Password
           valueFrom:
             secretKeyRef:
               name: gig-space-secret
