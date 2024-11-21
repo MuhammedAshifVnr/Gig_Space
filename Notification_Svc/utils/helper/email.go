@@ -9,8 +9,8 @@ import (
 )
 
 func SendEmailNotification(UserEmail, Subject, Message string) error {
-	from := viper.GetString("Email")
-	password := viper.GetString("AppPassword")
+	from := viper.GetString("EMAIL")
+	password := viper.GetString("APP_PASS")
 
 	msg := "From: " + from + "\n" +
 		"To: " + UserEmail + "\n" +

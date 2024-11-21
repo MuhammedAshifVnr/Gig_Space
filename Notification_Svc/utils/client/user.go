@@ -9,7 +9,7 @@ import (
 )
 
 func NewUserClinet() proto.UserServiceClient {
-	usersvc, err := grpc.Dial(viper.GetString("UserConn"), grpc.WithInsecure())
+	usersvc, err := grpc.Dial(viper.GetString("USER_CONN"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("failed to connect to User service: %v", err)
 	}

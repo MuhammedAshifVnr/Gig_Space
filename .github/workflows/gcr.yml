@@ -17,6 +17,7 @@ jobs:
           - Chat_Svc
           - Search_Svc
           - Gig_Svc
+          - Notification_Svc
         region: [us-central1]
 
     steps:
@@ -56,6 +57,9 @@ jobs:
               ;;
             Gig_Svc)
               echo "${{ secrets.GIG_SVC_CONFIG }}" > ./Gig_Svc/.env
+              ;;
+            Notification_Svc)
+              echo "${{ secrets.NOTIFICATION_SVC_CONFIG }}" > ./Notification_Svc/.env
               ;;
             *)
               echo "No configuration found for ${{ matrix.service }}"

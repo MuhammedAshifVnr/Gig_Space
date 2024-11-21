@@ -27,6 +27,31 @@ spec:
               key: DSN
         - name: USER_CONN
           value: "user-svc-service:8080"
+        - name: GIG_CONN
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: GIG_SVC_URL
+        - name: CHAT_CONN
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: CHAT_SVC_URL
+        - name: PAYMENT_CONN
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: PAYMENT_SVC_URL
+        - name: SEARCH_CONN
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: SEARCH_SVC_URL
+        - name: TOKEN_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: TOKEN_SECRET
       volumes:
       - name: env-volume
         secret:
