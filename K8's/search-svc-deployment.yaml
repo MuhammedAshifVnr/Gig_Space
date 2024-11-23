@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-svc-deployment
+  labels:
+    app: search-svc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: search-svc
+  template:
+    metadata:
+      labels:
+        app: search-svc
+    spec:
+      containers:
+      - name: search-svc
+        image: us-central1-docker.pkg.dev/celestial-baton-441615-q8/gig-space/search-svc:latest
+        ports:
+        - containerPort: 8083
+        env:
+        - name: URL
+          valueFrom:
+            secretKeyRef:
+              name: gig-space-secret
+              key: ELASTICSEARCH_URL
+      volumes:
+      - name: env-volume
+        secret:
+          secretName: gig-space-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: search-svc-service
+  labels:
+    app: search-svc
+spec:
+  type: ClusterIP
+  selector:
+    app: search-svc
+  ports:
+    - protocol: TCP
+      port: 8083
+      targetPort: 8083

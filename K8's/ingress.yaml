@@ -10,10 +10,10 @@ spec:
   ingressClassName: nginx
   tls:
   - hosts:
-    - ashif.online # Replace with your domain
+    - ashif.online 
     secretName: ashif-online-tls
   rules:
-  - host: ashif.online # Replace with your domain
+  - host: ashif.online 
     http:
       paths:
       - path: /

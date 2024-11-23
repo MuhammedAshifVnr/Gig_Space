@@ -9,7 +9,7 @@ import (
 )
 
 func InitElasticSearch() *elasticsearch.Client {
-	cfg := elasticsearch.Config{Addresses: []string{viper.GetString("Url")}}
+	cfg := elasticsearch.Config{Addresses: []string{viper.GetString("URL")}}
 	es, err := elasticsearch.NewClient(cfg)
 	if err != nil {
 		log.Fatalf("Error creating the Elasticsearch client: %s", err)
@@ -19,7 +19,7 @@ func InitElasticSearch() *elasticsearch.Client {
 
 func Redis() *redis.Client {
 	return redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     "redis:6379",
 		Password: "",
 		DB:       0,
 	})
