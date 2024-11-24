@@ -36,7 +36,15 @@ jobs:
 
       - name: Install gke-gcloud-auth-plugin
         run: |
-          curl -sSL https://github.com/google-gke/gke-gcloud-auth-plugin/releases/download/v0.3.0/gke-gcloud-auth-plugin-linux-amd64 -o /usr/local/bin/gke-gcloud-auth-plugin
+          ARCHITECTURE=$(uname -m)
+          if [ "$ARCHITECTURE" == "x86_64" ]; then
+            curl -sSL https://github.com/google-gke/gke-gcloud-auth-plugin/releases/download/v0.3.0/gke-gcloud-auth-plugin-linux-amd64 -o /usr/local/bin/gke-gcloud-auth-plugin
+          elif [ "$ARCHITECTURE" == "aarch64" ]; then
+            curl -sSL https://github.com/google-gke/gke-gcloud-auth-plugin/releases/download/v0.3.0/gke-gcloud-auth-plugin-linux-arm64 -o /usr/local/bin/gke-gcloud-auth-plugin
+          else
+            echo "Unsupported architecture: $ARCHITECTURE"
+            exit 1
+          fi
           chmod +x /usr/local/bin/gke-gcloud-auth-plugin
 
       - name: Configure Docker for Artifact Registry
