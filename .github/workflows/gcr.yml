@@ -77,3 +77,17 @@ jobs:
         run: |
           SERVICE_NAME=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
           docker push ${{ matrix.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/gig-space/$SERVICE_NAME:latest
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Authenticate kubectl with GCP
+        run: gcloud container clusters get-credentials <CLUSTER_NAME> --region ${{ matrix.region }}
+
+      - name: Deploy to GKE
+        run: |
+          DEPLOYMENT_FILE=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')-deployment.yaml
+          kubectl apply -f K8's/$DEPLOYMENT_FILE
+          kubectl rollout status deployment/${{ matrix.service }}
