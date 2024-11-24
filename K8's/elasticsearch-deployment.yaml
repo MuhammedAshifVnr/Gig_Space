@@ -1,12 +1,11 @@
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: elasticsearch
   labels:
     app: elasticsearch
 spec:
-  serviceName: elasticsearch
-  replicas: 1  
+  replicas: 1
   selector:
     matchLabels:
       app: elasticsearch
@@ -16,39 +15,49 @@ spec:
         app: elasticsearch
     spec:
       containers:
-      - name: elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
-        ports:
-        - containerPort: 9200
-        - containerPort: 9300
-        env:
-        - name: discovery.type
-          value: "single-node"
-        - name: xpack.security.enabled
-          value: "false"
-        volumeMounts:
-        - name: es-data
-          mountPath: /usr/share/elasticsearch/data
-  volumeClaimTemplates:
-  - metadata:
-      name: es-data
-    spec:
-      accessModes: ["ReadWriteOnce"]
-      resources:
-        requests:
-          storage: 1Gi  
+        - name: elasticsearch
+          image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+          ports:
+            - containerPort: 9200
+          env:
+            - name: discovery.type
+              value: single-node
+            - name: network.host
+              value: 0.0.0.0  # Bind to all network interfaces
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+          livenessProbe:
+            httpGet:
+              path: /_cluster/health
+              port: 9200
+            initialDelaySeconds: 60  # Increased delay to allow more time for startup
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /_cluster/health
+              port: 9200
+            initialDelaySeconds: 60  # Increased delay to allow more time for startup
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: elasticsearch
+  labels:
+    app: elasticsearch
 spec:
   ports:
-  - name: http
-    port: 9200
-    targetPort: 9200
-  - name: transport
-    port: 9300
-    targetPort: 9300
+    - port: 9200
+      targetPort: 9200
   selector:
     app: elasticsearch
+  clusterIP: None  # Ensures no load balancing; each pod gets its own IP

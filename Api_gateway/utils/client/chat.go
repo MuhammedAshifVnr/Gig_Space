@@ -9,7 +9,7 @@ import (
 )
 
 func NewChatClient() proto.ChatServiceClient {
-	Chatsvc, err := grpc.Dial(viper.GetString("ChatConn"), grpc.WithInsecure())
+	Chatsvc, err := grpc.Dial(viper.GetString("CHAT_CONN"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("failed to connect to Chat service: %v", err)
 	}

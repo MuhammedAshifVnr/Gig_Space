@@ -44,3 +44,14 @@ type Message struct {
 	MessageText string
 	CreatedAt   time.Time
 }
+
+type PaymentAuthorizedEvent struct {
+	Event  string `json:"event"`
+	Entity struct {
+		ID       string `json:"id"`
+		Amount   int    `json:"amount"`
+		Currency string `json:"currency"`
+		// Add other required fields from the webhook payload
+	} `json:"entity"`
+	// Add other required fields from the webhook payload
+}

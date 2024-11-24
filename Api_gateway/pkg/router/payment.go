@@ -15,7 +15,8 @@ func PaymentRouters(r fiber.Router, handller *handler.PaymentHandler) {
 	r.Post("/wallet", middleware.Auth(Role), handller.GetWallet)
 	r.Post("/bank", middleware.Auth(Role), handller.AddBankAccount)
 	r.Post("/withdrawal", middleware.Auth(Role), handller.Withdrawal)
-	r.Post("/wallet/change-pin",middleware.Auth(Role),handller.ChangeWalletPin)
-	r.Post("/wallet/forgot-pin",middleware.Auth(Role),handller.ForgotWalletPin)
-	r.Post("/wallet/reset-pin",middleware.Auth(Role),handller.ResetWalletPin)
+	r.Post("/wallet/change-pin", middleware.Auth(Role), handller.ChangeWalletPin)
+	r.Post("/wallet/forgot-pin", middleware.Auth(Role), handller.ForgotWalletPin)
+	r.Post("/wallet/reset-pin", middleware.Auth(Role), handller.ResetWalletPin)
+	r.Post("/webhook", handller.UpdateWebhook)
 }

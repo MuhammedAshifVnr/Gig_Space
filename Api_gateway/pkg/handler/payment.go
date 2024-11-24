@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -369,4 +370,23 @@ func (h *PaymentHandler) ResetWalletPin(c *fiber.Ctx) error {
 	}
 
 	return c.Status(int(res.Status)).JSON(res)
+}
+
+func (h *PaymentHandler) UpdateWebhook(c *fiber.Ctx) error {
+	var payload helper.PaymentAuthorizedEvent
+	if err := c.BodyParser(&payload); err != nil {
+		log.Println("Failed to parse webhook payload:", err)
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid payload"})
+	}
+	fmt.Println("pay", payload)
+	res, err := h.PaymentClient.HandleWebhook(context.Background(), &proto.WebhookRequest{
+		Payload: map[string]string{
+			"event": payload.Event,
+		},
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(200).JSON(res)
 }
