@@ -44,7 +44,8 @@ func (h *UserHandler) AdminLogin(c *fiber.Ctx) error {
 		Expires:  time.Now().Add(24 * time.Hour),
 		HTTPOnly: true,
 		Secure:   false,
-		SameSite: "Lax",
+		SameSite: fiber.CookieSameSiteLaxMode,
+		Domain:   "ashif.online",
 	})
 	return c.Status(int(res.Status)).JSON(res)
 }

@@ -127,7 +127,7 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 		HTTPOnly: true,
 		Secure:   false, 
 		SameSite: fiber.CookieSameSiteLaxMode,
-		Domain:   "34.121.243.196", 
+		Domain:   "ashif.online", 
 	})
 	return c.Status(int(res.Status)).JSON(res)
 }
