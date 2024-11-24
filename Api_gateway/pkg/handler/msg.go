@@ -91,7 +91,7 @@ func (h *MessagingHandler) DispatchMessage(users map[int32]*websocket.Conn, msg 
 }
 
 func (h *MessagingHandler) PublishToQueue(msg helper.Message) error {
-	conn, err := amqp091.Dial("amqp://guest:guest@localhost:5672/")
+	conn, err := amqp091.Dial("amqp://guest:guest@rabbitmq-service:5672/")
 	if err != nil {
 		return err
 	}
