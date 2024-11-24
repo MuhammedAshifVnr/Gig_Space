@@ -84,7 +84,7 @@ jobs:
           version: 'latest'
 
       - name: Authenticate kubectl with GCP
-        run: gcloud container clusters get-credentials <CLUSTER_NAME> --region ${{ matrix.region }}
+        run: gcloud container clusters get-credentials gig-space-cluster --region ${{ matrix.region }}
 
       - name: Deploy to GKE
         run: |
