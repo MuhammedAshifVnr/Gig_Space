@@ -18,7 +18,7 @@ jobs:
           - Search_Svc
           - Gig_Svc
           - Notification_Svc
-        region: [us-central1]
+        region: [us-central1-a]
 
     steps:
       - name: Checkout Code
