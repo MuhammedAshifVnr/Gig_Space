@@ -37,6 +37,11 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ matrix.region }}-docker.pkg.dev
 
+      - name: Install gke-gcloud-auth-plugin
+        run: |
+          gcloud components install gke-gcloud-auth-plugin --quiet
+          export USE_GKE_GCLOUD_AUTH_PLUGIN=True
+
       - name: Set up .env file for service
         run: |
           case "${{ matrix.service }}" in
@@ -84,10 +89,13 @@ jobs:
           version: 'latest'
 
       - name: Authenticate kubectl with GCP
-        run: gcloud container clusters get-credentials gig-space-cluster --region us-central1-a
+        env:
+          USE_GKE_GCLOUD_AUTH_PLUGIN: "True"
+        run: |
+          gcloud container clusters get-credentials gig-space-cluster --region us-central1-a
 
       - name: Deploy to GKE
         run: |
           DEPLOYMENT_FILE=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')-deployment.yaml
-          kubectl apply -f K8s/$DEPLOYMENT_FILE --validate=false
+          kubectl apply -f K8s/$DEPLOYMENT_FILE
           kubectl rollout status deployment/${{ matrix.service }}
