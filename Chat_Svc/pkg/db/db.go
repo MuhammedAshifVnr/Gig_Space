@@ -11,7 +11,7 @@ import (
 )
 
 func InitMongoDB() *mongo.Collection {
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(viper.GetString("Mongo_URI")))
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(viper.GetString("MONGO_URL")))
 	if err != nil {
 		log.Fatalf("Failed to connect DB :%v", err)
 	}
@@ -24,7 +24,7 @@ func InitMongoDB() *mongo.Collection {
 
 func InitRedisClient() *redis.Client {
 	return redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     "redis:6379",
 		Password: "",
 		DB:       0,
 	})

@@ -8,7 +8,7 @@ import (
 )
 
 func ConnectRabbitMQ() *amqp091.Connection {
-	conn, err := amqp091.Dial(viper.GetString("AmqpUrl"))
+	conn, err := amqp091.Dial(viper.GetString("AMQP_URL"))
 	if err != nil {
 		fmt.Println("error", err)
 	}

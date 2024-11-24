@@ -14,7 +14,7 @@ func InitializeService() *service.ChatService {
 	RDB := db.InitRedisClient()
 	Repo := repo.NewChatRepository(DB, RDB)
 	Rmq := broker.ConnectRabbitMQ()
-	Kafka := config.InitKafkaWriters([]string{viper.GetString("Broker")}, []string{viper.GetString("OfflineTopic")})
+	Kafka := config.InitKafkaWriters([]string{viper.GetString("BROKER")}, []string{viper.GetString("OfflineTopic")})
 	service := service.NewChatService(Repo, Rmq,Kafka)
 	go service.ChatManger()
 	return service
