@@ -373,13 +373,18 @@ func (h *PaymentHandler) ResetWalletPin(c *fiber.Ctx) error {
 }
 
 func (h *PaymentHandler) UpdateWebhook(c *fiber.Ctx) error {
-	var payload map[string]string
+	var payload map[string]interface{}
 	if err := c.BodyParser(&payload); err != nil {
 		log.Println("Failed to parse webhook payload:", err)
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid payload"})
 	}
 	fmt.Println("pay", payload)
-	res, err := h.PaymentClient.HandleWebhook(context.Background(), &proto.WebhookRequest{Payload: payload})
+	res, err := h.PaymentClient.HandleWebhook(context.Background(), &proto.WebhookRequest{
+		Payload: map[string]string{
+			"event":payload["event"].(string),
+			"entity.id":payload["entity.id"].(string),
+			"entity.amount":payload["entity.amount"].(string),
+		}})
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
