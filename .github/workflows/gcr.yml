@@ -18,7 +18,7 @@ jobs:
           - Search_Svc
           - Gig_Svc
           - Notification_Svc
-        region: [us-central1-a]
+        region: [us-central1]
 
     steps:
       - name: Checkout Code
@@ -84,7 +84,7 @@ jobs:
           version: 'latest'
 
       - name: Authenticate kubectl with GCP
-        run: gcloud container clusters get-credentials gig-space-cluster --region ${{ matrix.region }}
+        run: gcloud container clusters get-credentials gig-space-cluster --region us-central1-a
 
       - name: Deploy to GKE
         run: |
