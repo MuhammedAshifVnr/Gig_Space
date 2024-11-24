@@ -34,22 +34,6 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Install gke-gcloud-auth-plugin
-        run: |
-          ARCHITECTURE=$(uname -m)
-          echo "Detected architecture: $ARCHITECTURE"
-          if [ "$ARCHITECTURE" == "x86_64" ]; then
-            curl -sSL https://github.com/google-gke/gke-gcloud-auth-plugin/releases/download/v0.3.0/gke-gcloud-auth-plugin-linux-amd64 -o /usr/local/bin/gke-gcloud-auth-plugin
-          elif [ "$ARCHITECTURE" == "aarch64" ]; then
-            curl -sSL https://github.com/google-gke/gke-gcloud-auth-plugin/releases/download/v0.3.0/gke-gcloud-auth-plugin-linux-arm64 -o /usr/local/bin/gke-gcloud-auth-plugin
-          else
-            echo "Unsupported architecture: $ARCHITECTURE"
-            exit 1
-          fi
-          chmod +x /usr/local/bin/gke-gcloud-auth-plugin
-          # Check if the plugin was installed successfully
-          /usr/local/bin/gke-gcloud-auth-plugin --version
-
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ matrix.region }}-docker.pkg.dev
 
