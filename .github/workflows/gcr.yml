@@ -34,10 +34,15 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Add Google Cloud SDK repository
+      - name: Add Google Cloud SDK repository and public key
         run: |
+          # Add the Google Cloud SDK repository
           echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+          
+          # Download and add the public key
+          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo tee /usr/share/keyrings/cloud.google.gpg
+          
+          # Update package list
           sudo apt-get update
 
       - name: Install gke-gcloud-auth-plugin
