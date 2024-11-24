@@ -89,6 +89,5 @@ jobs:
       - name: Deploy to GKE
         run: |
           DEPLOYMENT_FILE=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')-deployment.yaml
-          kubectl apply -f K8's/$DEPLOYMENT_FILE
+          kubectl apply -f K8s/$DEPLOYMENT_FILE
           kubectl rollout status deployment/${{ matrix.service }}
-
