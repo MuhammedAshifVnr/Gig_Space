@@ -176,6 +176,22 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/admin/logout": {
+            "post": {
+                "description": "Clears the authentication cookie and logs the user out",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Logs out the user",
+                "responses": {}
+            }
+        },
         "/admin/orders/complet/{OrderID}": {
             "post": {
                 "description": "Initiates a complet for a specified order by its OrderID.",
@@ -1374,6 +1390,22 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/user/logout": {
+            "post": {
+                "description": "Clears the authentication cookie and logs the user out",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Logs out the user",
+                "responses": {}
+            }
+        },
         "/user/profile": {
             "get": {
                 "description": "Retrieves the profile details of the user based on their user ID",
@@ -1623,26 +1655,43 @@ const docTemplate = `{
         },
         "helper.LoginData": {
             "type": "object",
+            "required": [
+                "useremail",
+                "userpassword"
+            ],
             "properties": {
                 "useremail": {
                     "type": "string"
                 },
                 "userpassword": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 4
                 }
             }
         },
         "helper.SignupData": {
             "type": "object",
+            "required": [
+                "country",
+                "firstname",
+                "lastname",
+                "phone",
+                "useremail",
+                "userpassword"
+            ],
             "properties": {
                 "country": {
                     "type": "string"
                 },
                 "firstname": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 4
                 },
                 "lastname": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 4
                 },
                 "phone": {
                     "type": "string"
@@ -1651,7 +1700,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "userpassword": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 6
                 }
             }
         }

@@ -431,3 +431,28 @@ func (h *UserHandler) RoleChange(c *fiber.Ctx) error {
 	}
 	return c.Status(int(res.Status)).JSON(res)
 }
+
+// Logout
+// @Summary Logs out the user
+// @Description Clears the authentication cookie and logs the user out
+// @Tags User
+// @Accept json
+// @Produce json
+// @Router /user/logout [post]
+func (h *UserHandler) AdminLogout(c *fiber.Ctx) error {
+	// Clear the authentication cookie
+	c.Cookie(&fiber.Cookie{
+		Name:     "UserToken",       // The name of the cookie to clear
+		Value:    "",                // Set an empty value
+		Expires:  time.Now().Add(-1), // Expire the cookie immediately
+		HTTPOnly: true,
+		Secure:   false,             // Adjust based on your deployment
+		SameSite: fiber.CookieSameSiteLaxMode,
+		Domain:   "ashif.online",    // Match the domain used in login
+	})
+
+	// Return a success response
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Logged out successfully",
+	})
+}

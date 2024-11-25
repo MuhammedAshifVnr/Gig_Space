@@ -21,22 +21,38 @@ definitions:
       useremail:
         type: string
       userpassword:
+        minLength: 4
         type: string
+    required:
+    - useremail
+    - userpassword
     type: object
   helper.SignupData:
     properties:
       country:
         type: string
       firstname:
+        maxLength: 50
+        minLength: 4
         type: string
       lastname:
+        maxLength: 50
+        minLength: 4
         type: string
       phone:
         type: string
       useremail:
         type: string
       userpassword:
+        minLength: 6
         type: string
+    required:
+    - country
+    - firstname
+    - lastname
+    - phone
+    - useremail
+    - userpassword
     type: object
 info:
   contact: {}
@@ -154,6 +170,17 @@ paths:
       - application/json
       responses: {}
       summary: Admin login
+      tags:
+      - Admin
+  /admin/logout:
+    post:
+      consumes:
+      - application/json
+      description: Clears the authentication cookie and logs the user out
+      produces:
+      - application/json
+      responses: {}
+      summary: Logs out the user
       tags:
       - Admin
   /admin/orders/complet/{OrderID}:
@@ -989,6 +1016,17 @@ paths:
       - application/json
       responses: {}
       summary: User login
+      tags:
+      - User
+  /user/logout:
+    post:
+      consumes:
+      - application/json
+      description: Clears the authentication cookie and logs the user out
+      produces:
+      - application/json
+      responses: {}
+      summary: Logs out the user
       tags:
       - User
   /user/profile:

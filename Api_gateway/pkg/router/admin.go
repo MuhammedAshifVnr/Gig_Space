@@ -21,9 +21,10 @@ func AdminRouters(r fiber.Router, handller *handler.UserHandler, payHandller *ha
 	r.Post("/create-plan", middleware.Auth(role), payHandller.CreatePlan)
 	r.Get("/plans", middleware.Auth(role), payHandller.GetPlans)
 	r.Delete("/plan/:PlanID", middleware.Auth(role), payHandller.DeletPlan)
-
+	r.Post("/logout", middleware.Auth(role), handller.AdminLogout)
 	r.Get("/orders/refund", middleware.Auth(Role), gigHandler.GetAllRefundOrders)
 	r.Post("/orders/refund/:OrderID", middleware.Auth(Role), gigHandler.Refund)
 	r.Get("/orders/completed", middleware.Auth(Role), gigHandler.GetAllCompletedOrders)
 	r.Post("/orders/complet/:OrderID", middleware.Auth(Role), gigHandler.Payment)
+
 }
