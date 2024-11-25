@@ -385,22 +385,26 @@ func (h *PaymentHandler) UpdateWebhook(c *fiber.Ctx) error {
     // Safely extract fields
     event, ok := payload["event"].(string)
     if !ok {
+		fmt.Println("missing or invalid 'event'")
         return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "missing or invalid 'event'"})
     }
 
     // Access nested structures
     subscriptionData, subExists := payload["payload"].(map[string]interface{})["subscription"].(map[string]interface{})
     if !subExists {
+		fmt.Println("missing 'subscription' data in payload")
         return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "missing 'subscription' data in payload"})
     }
 
     subscriptionEntity, entityExists := subscriptionData["entity"].(map[string]interface{})
     if !entityExists {
+		log.Println("missing 'entity' in subscription data")
         return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "missing 'entity' in subscription data"})
     }
 
     subscriptionID, idOk := subscriptionEntity["id"].(string)
     if !idOk {
+		fmt.Println("missing or invalid 'id' in subscription entity")
         return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "missing or invalid 'id' in subscription entity"})
     }
 
