@@ -373,21 +373,51 @@ func (h *PaymentHandler) ResetWalletPin(c *fiber.Ctx) error {
 }
 
 func (h *PaymentHandler) UpdateWebhook(c *fiber.Ctx) error {
-	var payload map[string]interface{}
-	if err := c.BodyParser(&payload); err != nil {
-		log.Println("Failed to parse webhook payload:", err)
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid payload"})
-	}
-	fmt.Println("pay", payload)
-	res, err := h.PaymentClient.HandleWebhook(context.Background(), &proto.WebhookRequest{
-		Payload: map[string]string{
-			"event":payload["event"].(string),
-			"entity.id":payload["entity.id"].(string),
-			"entity.amount":payload["entity.amount"].(string),
-		}})
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
-	}
+    // Log the raw payload for debugging
+    log.Printf("Webhook payload: %s", string(c.Body()))
 
-	return c.Status(200).JSON(res)
+    // Parse the payload into a generic map
+    var payload map[string]interface{}
+    if err := c.BodyParser(&payload); err != nil {
+        log.Println("Failed to parse webhook payload:", err)
+        return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid payload"})
+    }
+
+    // Log the parsed payload for debugging
+    log.Println("Parsed payload:", payload)
+
+    // Extract and validate fields safely
+    event, ok := payload["event"].(string)
+    if !ok {
+        return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid or missing 'event'"})
+    }
+
+    entity, ok := payload["entity"].(map[string]interface{}) // Handle nested entity
+    if !ok {
+        return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid or missing 'entity'"})
+    }
+
+    entityID, ok := entity["id"].(string)
+    if !ok {
+        return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid or missing 'entity.id'"})
+    }
+
+    entityAmount, ok := entity["amount"].(float64) 
+    if !ok {
+        return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid or missing 'entity.amount'"})
+    }
+
+    // Call the gRPC client
+    res, err := h.PaymentClient.HandleWebhook(context.Background(), &proto.WebhookRequest{
+        Payload: map[string]string{
+            "event":         event,
+            "entity.id":     entityID,
+            "entity.amount": fmt.Sprintf("%.0f", entityAmount), 
+        },
+    })
+    if err != nil {
+        return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+    }
+
+    return c.Status(200).JSON(res)
 }

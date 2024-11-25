@@ -8,6 +8,7 @@ import (
 	_ "github.com/MuhammedAshifVnr/Gig_Space/api_gateway/docs"
 	"github.com/MuhammedAshifVnr/Gig_Space/api_gateway/pkg/config"
 	"github.com/MuhammedAshifVnr/Gig_Space/api_gateway/pkg/di"
+	"github.com/MuhammedAshifVnr/Gig_Space/api_gateway/pkg/monitoring"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -26,6 +27,7 @@ func main() {
 	}
 
 	app := fiber.New()
+	monitoring.Register(app)
 	app.Use(logger.New())
 
 	app.Use(limiter.New(limiter.Config{
