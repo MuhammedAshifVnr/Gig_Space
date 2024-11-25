@@ -3,17 +3,16 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"time"
 
 	_ "github.com/MuhammedAshifVnr/Gig_Space/api_gateway/docs"
 	"github.com/MuhammedAshifVnr/Gig_Space/api_gateway/pkg/config"
 	"github.com/MuhammedAshifVnr/Gig_Space/api_gateway/pkg/di"
+	"github.com/MuhammedAshifVnr/Gig_Space/api_gateway/pkg/monitoring"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/swagger"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/viper"
 )
 
@@ -28,7 +27,7 @@ func main() {
 	}
 
 	app := fiber.New()
-
+	monitoring.Register(app)
 	app.Use(logger.New())
 
 	app.Use(limiter.New(limiter.Config{
@@ -46,17 +45,6 @@ func main() {
 	app.Get("/swagger/*", swagger.HandlerDefault)
 	app.Static("/temp", "./temp")
 	di.InitializeRoutes(app)
-
-	http.Handle("/metrics", promhttp.Handler())
-
-	// Start Prometheus server
-	go func() {
-		log.Println("Starting Prometheus metrics server on port 9090")
-		if err := http.ListenAndServe(":9090", nil); err != nil {
-			log.Fatal("Prometheus metrics server stopped:", err)
-		}
-	}()
-
 	fmt.Println("Port", viper.GetString("PORT"))
 	if err := app.Listen(viper.GetString("PORT")); err != nil {
 		fmt.Println("stoped", err)

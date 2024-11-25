@@ -49,9 +49,8 @@ func Register(app *fiber.App) {
 		return c.JSON(fiber.Map{"status": "healthy"})
 	})
 
-	
 	app.Get("/simulate_down", func(c *fiber.Ctx) error {
-		serviceHealth.WithLabelValues("api_gateway").Set(0) 
+		serviceHealth.WithLabelValues("api_gateway").Set(0)
 		return c.JSON(fiber.Map{"status": "Service marked as DOWN"})
 	})
 
