@@ -383,41 +383,50 @@ func (h *PaymentHandler) UpdateWebhook(c *fiber.Ctx) error {
         return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid payload"})
     }
 
-    // Log the parsed payload for debugging
     log.Println("Parsed payload:", payload)
 
-    // Extract and validate fields safely
+    // Safely extract fields
     event, ok := payload["event"].(string)
     if !ok {
-        return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid or missing 'event'"})
+        return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "missing or invalid 'event'"})
     }
 
-    entity, ok := payload["entity"].(map[string]interface{}) // Handle nested entity
-    if !ok {
-        return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid or missing 'entity'"})
+    // Access nested structures
+    subscriptionData, subExists := payload["payload"].(map[string]interface{})["subscription"].(map[string]interface{})
+    if !subExists {
+        return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "missing 'subscription' data in payload"})
     }
 
-    entityID, ok := entity["id"].(string)
-    if !ok {
-        return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid or missing 'entity.id'"})
+    subscriptionEntity, entityExists := subscriptionData["entity"].(map[string]interface{})
+    if !entityExists {
+        return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "missing 'entity' in subscription data"})
     }
 
-    entityAmount, ok := entity["amount"].(float64) 
-    if !ok {
-        return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid or missing 'entity.amount'"})
+    subscriptionID, idOk := subscriptionEntity["id"].(string)
+    if !idOk {
+        return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "missing or invalid 'id' in subscription entity"})
+    }
+
+    // Access other nested fields like "amount", handling null or missing fields
+    var amount string
+    if val, ok := subscriptionEntity["amount"].(float64); ok {
+        amount = fmt.Sprintf("%.0f", val) // Convert float64 to string
+    } else {
+        log.Println("Missing 'amount', setting as '0'")
+        amount = "0" // Default value
     }
 
     // Call the gRPC client
     res, err := h.PaymentClient.HandleWebhook(context.Background(), &proto.WebhookRequest{
         Payload: map[string]string{
             "event":         event,
-            "entity.id":     entityID,
-            "entity.amount": fmt.Sprintf("%.0f", entityAmount), 
+            "entity.id":     subscriptionID,
+            "entity.amount": amount,
         },
     })
     if err != nil {
-        return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+        return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
     }
 
-    return c.Status(200).JSON(res)
+    return c.Status(http.StatusOK).JSON(res)
 }
