@@ -387,7 +387,7 @@ func (h *GigHandler) Payment(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Router /admin/logout [post]
-func (h *UserHandler) Logout(c *fiber.Ctx) error {
+func (h *UserHandler) AdminLogout(c *fiber.Ctx) error {
 	// Clear the authentication cookie
 	c.Cookie(&fiber.Cookie{
 		Name:     "AdminToken",       // The name of the cookie to clear

@@ -439,7 +439,7 @@ func (h *UserHandler) RoleChange(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Router /user/logout [post]
-func (h *UserHandler) AdminLogout(c *fiber.Ctx) error {
+func (h *UserHandler) Logout(c *fiber.Ctx) error {
 	// Clear the authentication cookie
 	c.Cookie(&fiber.Cookie{
 		Name:     "UserToken",       // The name of the cookie to clear
