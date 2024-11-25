@@ -373,17 +373,14 @@ func (h *PaymentHandler) ResetWalletPin(c *fiber.Ctx) error {
 }
 
 func (h *PaymentHandler) UpdateWebhook(c *fiber.Ctx) error {
-    // Log the raw payload for debugging
-    log.Printf("Webhook payload: %s", string(c.Body()))
 
-    // Parse the payload into a generic map
     var payload map[string]interface{}
     if err := c.BodyParser(&payload); err != nil {
         log.Println("Failed to parse webhook payload:", err)
         return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "invalid payload"})
     }
 
-    log.Println("Parsed payload:", payload)
+    // log.Println("Parsed payload:", payload)
 
     // Safely extract fields
     event, ok := payload["event"].(string)
